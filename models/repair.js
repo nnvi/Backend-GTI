@@ -1,0 +1,33 @@
+'use strict';
+const {
+  Model
+} = require('sequelize');
+module.exports = (sequelize, DataTypes) => {
+  class repair extends Model {
+    /**
+     * Helper method for defining associations.
+     * This method is not a part of Sequelize lifecycle.
+     * The `models/index` file will call this method automatically.
+     */
+    static associate(models) {
+      // define association here
+      repair.hasMany(models.log_activity,{foreignKey:"repair_id"}),
+      repair.belongsTo(models.users,{foreignKey:"user_id"}),
+      repair.belongsTo(models.container,{foreignKey:"container_id"})
+    }
+  }
+  repair.init({
+    repair_uuid: {
+      type:DataTypes.STRING,
+      defaultValue:DataTypes.UUIDV4
+    },
+    user_id: DataTypes.INTEGER,
+    container_id: DataTypes.INTEGER,
+    remarks: DataTypes.TEXT,
+    image: DataTypes.STRING
+  }, {
+    sequelize,
+    modelName: 'repair',
+  });
+  return repair;
+};

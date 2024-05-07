@@ -1,0 +1,429 @@
+openapi: 3.0.3
+info:
+  title: Giant Transporter Indonesia Container
+  description:
+    API documentationfor back-end GTI web
+  version: 1.0.11
+servers:
+  - url: http://localhost:3000
+tags:
+  - name: users
+    description: API for users
+  - name: container
+    description: API for container
+  - name: shipment
+    description: API for Shipment
+  - name: repair
+    description: API for repair
+  - name: Log_activity
+    description: API for Log Activity
+paths:
+  /login:
+    post:
+      tags:
+        - users
+      summary: Sign in to the website
+      description: Login with an existing user by email and password
+      requestBody:
+        $ref: '#/components/requestBodies/LoginRequest'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiRW1haWwiOiJhZG1pbkB0cmlwaWUuY29tIiwiY3JlYXRlZEF0IjoiMjAyMi0xMS0zMFQxNDowNzo0OC45MjZaIiwidXBkYXRlZEF0IjoiMjAyMi0xMS0zMFQxNDowNzo0OC45MjZaIiwiaWF0IjoxNjY5ODQyOTMwLCJleHAiOjE2Njk4NDY1MzB9.cyKEBVKxBGhVpiM_5Hw29JEjLVGPuYk7h2wF7oEzAnQ"
+    
+  /addUser:
+    post:
+      parameters:
+        - in: header
+          name: token
+          schema:
+            type: string
+            format: jwt
+      tags:
+        - users
+      summary: to add users
+      requestBody:
+        $ref: '#/components/requestBodies/Register'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/users'
+  
+  /getUser?page={number}:
+    get:
+      tags:
+        - users
+      parameters:
+        - in: header
+          name: token
+          schema:
+            type: string
+            format: jwt
+            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiRW1haWwiOiJhZG1pbkB0cmlwaWUuY29tIiwiY3JlYXRlZEF0IjoiMjAyMi0xMS0zMFQxNDowNzo0OC45MjZaIiwidXBkYXRlZEF0IjoiMjAyMi0xMS0zMFQxNDowNzo0OC45MjZaIiwiaWF0IjoxNjY5ODQyOTMwLCJleHAiOjE2Njk4NDY1MzB9.cyKEBVKxBGhVpiM_5Hw29JEjLVGPuYk7h2wF7oEzAnQ"
+        - in: query
+          name: page
+          required: true
+          schema:
+            type: number
+            example: 1
+      responses:
+        "200":
+          $ref: "#/components/responses/getUsers"
+  
+  /user/{id}:
+    get:
+      tags: 
+        - users
+      parameters:
+        - in: header
+          name: token
+          schema:
+            type: string
+            format: jwt
+            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiRW1haWwiOiJhZG1pbkB0cmlwaWUuY29tIiwiY3JlYXRlZEF0IjoiMjAyMi0xMS0zMFQxNDowNzo0OC45MjZaIiwidXBkYXRlZEF0IjoiMjAyMi0xMS0zMFQxNDowNzo0OC45MjZaIiwiaWF0IjoxNjY5ODQyOTMwLCJleHAiOjE2Njk4NDY1MzB9.cyKEBVKxBGhVpiM_5Hw29JEjLVGPuYk7h2wF7oEzAnQ"
+        - in: path
+          name: page
+          required: true
+          schema:
+            type: number
+            example: 1
+      responses:
+        '200': 
+          $ref: '#/components/responses/GetUserByIdResponse'
+    put:
+      tags:
+        - users
+      parameters:
+        - in: header
+          name: token
+          schema:
+            type: string
+            format: jwt
+            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiRW1haWwiOiJhZG1pbkB0cmlwaWUuY29tIiwiY3JlYXRlZEF0IjoiMjAyMi0xMS0zMFQxNDowNzo0OC45MjZaIiwidXBkYXRlZEF0IjoiMjAyMi0xMS0zMFQxNDowNzo0OC45MjZaIiwiaWF0IjoxNjY5ODQyOTMwLCJleHAiOjE2Njk4NDY1MzB9.cyKEBVKxBGhVpiM_5Hw29JEjLVGPuYk7h2wF7oEzAnQ"
+        - in: path
+          name: page
+          required: true
+          schema:
+            type: number
+            example: 1
+      requestBody:
+        $ref: "#/components/requestBodies/Register"
+      responses:
+        '200': 
+          $ref: '#/components/responses/updateUserByIdResponse'
+    delete:
+      tags:
+        - users
+      parameters:
+        - in: header
+          name: token
+          schema:
+            type: string
+            format: jwt
+            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiRW1haWwiOiJhZG1pbkB0cmlwaWUuY29tIiwiY3JlYXRlZEF0IjoiMjAyMi0xMS0zMFQxNDowNzo0OC45MjZaIiwidXBkYXRlZEF0IjoiMjAyMi0xMS0zMFQxNDowNzo0OC45MjZaIiwiaWF0IjoxNjY5ODQyOTMwLCJleHAiOjE2Njk4NDY1MzB9.cyKEBVKxBGhVpiM_5Hw29JEjLVGPuYk7h2wF7oEzAnQ"
+        - in: path
+          name: page
+          required: true
+          schema:
+            type: number
+            example: 1
+      responses:
+        '200': 
+          $ref: '#/components/responses/deleteUserResponse'
+
+  /addContainer:
+    post:
+      tags:
+        - container
+      parameters:
+        - in: header
+          name: token
+          schema:
+            type: string
+            format: jwt
+            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiRW1haWwiOiJhZG1pbkB0cmlwaWUuY29tIiwiY3JlYXRlZEF0IjoiMjAyMi0xMS0zMFQxNDowNzo0OC45MjZaIiwidXBkYXRlZEF0IjoiMjAyMi0xMS0zMFQxNDowNzo0OC45MjZaIiwiaWF0IjoxNjY5ODQyOTMwLCJleHAiOjE2Njk4NDY1MzB9.cyKEBVKxBGhVpiM_5Hw29JEjLVGPuYk7h2wF7oEzAnQ"
+      requestBody:
+        $ref:""
+
+components:
+  schemas:
+    users:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        user_uuid:
+          type: string
+          format: uuidv4
+        name:
+          type: string
+          format: varchar
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        role:
+          type: string
+          enum:
+            - Customer Service
+            - Super Admin
+            - Operational
+        location:
+          type: string
+          enum:
+            - Jakarta
+            - Belawan
+            - Surabaya
+        user_image:
+          type: string
+    log_activity:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+          format: foreign key
+        shipment_id:
+          type: integer
+          format: foreign key
+        repair_id:
+          type: integer
+          format: foreign key
+        activity_info:
+          type: string
+      xml:
+        name: log_activity
+    container:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        container_uuid:
+          type: integer
+        container_number:
+          type: string
+        user_id:
+          type: integer
+        age:
+          type: integer
+        location:
+          type: string
+          enum:
+          - Jakarta
+          - Belawan
+          - Surabaya
+        iddle_days:
+          type: integer
+        type:
+          type: string
+          enum:
+          - 20 feet
+          - 40 feet
+        status:
+          type: string
+          enum:
+          - Ready
+          - In Use
+          - Repair
+      xml:
+        name: container
+    shipment:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        shipment_uuid:
+          type: string
+        shipment_number:
+          type: string
+        user_id:
+          type: integer
+        container_id:
+          type: integer
+        return_empty:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+          - PIckup
+          - Gate in
+          - Departure
+          - Arrive
+          - Return empty
+        shipmentdetail_id:
+          type: integer
+        remark_description:
+          type: string
+          format: text
+        image:
+          type: string
+        active_status:
+          type: boolean
+        delete_by:
+          type: string
+      xml:
+        name: shipment
+    shipment_details:
+      type: object
+      properties:
+        id:
+          type: integer
+        POL:
+          type: string
+        POD:
+          type: string
+        ETD:
+          type: string
+          format: date-time
+        ETA:
+          type: string
+          format: date-time
+        stuffing_date:
+          type: string
+          format: date-time
+        shipper:
+          type: string
+      xml:
+        name: shipment_detail
+    repair:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        container_id:
+          type: integer
+        repair_uuid:
+          type: string
+          format: uuid
+        remark:
+          type: string
+          format: text
+        image:
+          type: string
+      xml:
+        name: repair
+  requestBodies:
+    LoginRequest:
+      description: Login For User
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                example: "admin@gmail.com"
+              password:
+                type: string
+                example: "admin"
+    Register:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                example: "user"
+              email:
+                type: string
+                example: "user@giant.com"
+              password:
+                type: string
+                example: "user"
+              role:
+                type: string
+                example: "Operational"
+              location:
+                type: string
+                example: "Medan"
+              user_image:
+                type: string
+                example: "https://clipart-library.com/clipart/6103.htm"
+    addUser:
+      required: true
+        content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              container_number:
+                type: string
+                example: "GTIBLW06518612"
+              age:
+                type: integer
+                example: 2
+              location:
+                type: string
+                example: "Surabaya"
+              iddle_days:
+                type: integer
+                example: 100
+              type:
+                type: string
+                example: "40 feet"
+
+  responses:
+    getUsers:
+      description: getusers response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              oneOf:
+                - $ref: "#/components/schemas/users"
+                - $ref: "#/components/schemas/users"
+  
+    GetUserByIdResponse:
+        description: Response when success Get User By Id.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  $ref: "#/components/schemas/users"
+  
+    updateUserByIdResponse:
+        description: Response when success update data User By Id.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: 
+                  type: string
+                  example: "update users successful"
+                user:
+                  $ref: "#/components/schemas/users"
+    deleteUserResponse:
+        description: Response when success delete data User By Id.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: 
+                  type: string
+                  example: "delete users success"

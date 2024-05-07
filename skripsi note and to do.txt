@@ -1,0 +1,53 @@
+note yang belum dibuat :
+- auto adding log activity setiap perintah
+- filter
+- history container
+- api datauntuk dashboard
+
+note to do to check:
+- connect all shipmet - user - container - details shipment
+- shipment details can be combine to shipment file only(karena bersamaan dikerjakan)
+
+note:
+- tambahan data enum status shipment "Book"
+- booked by buat apa ya di shipment?
+
+
+//Dummy data untuk testing api//
+user data 
+{
+    "name": "user",
+    "email": "user@gmail.com",
+    "password": "user",
+    "role": "Operasional",
+    "location": "Medan",
+    "user_image": "https://clipart-library.com/clipart/6103.htm"
+}
+
+container data
+{
+    "container_number":"GTIBLW03910410",
+    "age":2,
+    "location": "Jakarta",
+    "iddle_days": 80,
+    "type":"20 feet"
+}
+
+shipment data
+{
+    "shipment_number":"GTI0010012931",
+    "container_number": "GTIBLW03910410",
+    "shipper":"Musim Mas",
+    "stuffing_date": "2024-4-16",
+    "POL":"Belawan",
+    "POD":"Balikpapan",
+    "ETD":"2024-4-18",
+    "status":"Pickup"
+}
+
+repair data
+{
+    "container_number":"GTIBLW03910410",
+    "remark":"tembok bolong",
+    "image":"https://clipart-library.com/clipart/6103.htm"
+}
