@@ -1,7 +1,8 @@
 const { v4: uuidv4 } = require('uuid');
 const { generateToken } = require("../helpers/jwt")
 const {comparePassword, hashPassword}= require('../helpers/bcrypt')
-const {users}= require('../models')
+const {users,log_activity}= require('../models')
+const cloudinary = require('../middlewares/cloudinary')
 
 class userController{
     //user login
@@ -72,8 +73,18 @@ class userController{
     // add a new user
     static async addUser(req,res){
         try{
-            const {name,email, password,role, location,user_image} = req.body
+            const {name,email, password,role, location} = req.body
             const hashedPassword = hashPassword(password)
+            const result = await cloudinary.uploader.upload(req.file.path,{folder: "profile_pictures"},function(err,result){
+                if(err){
+                    console.log(err);
+                    return res.status(500).json({
+                        status: "failed",
+                        message: "ERROR"
+                    })
+                }
+                return result
+            });
             const create = await users.create({
                 user_uuid: uuidv4(),
                 name: name,
@@ -81,13 +92,20 @@ class userController{
                 password: hashedPassword,
                 role:role,
                 location: location,
-                user_image: user_image
+                user_image: result.secure_url
+            })
+
+            const addLog = await log_activity.create({
+                user_id: req.userData.id,
+                shipment_id: null,
+                repair_id: null,
+                activity_info: "add new user"
             })
             res.status(200).json({
                 user: create
             })
         }catch(err){
-            res.status(500).json({
+            res.status(501).json({
                 message: err
             })
         }
@@ -111,6 +129,12 @@ class userController{
         try{
             const {id}= req.params
             const deleteUser = await users.destroy({where:{id}})
+            const addLog = await log_activity.create({
+                user_id: req.userData.id,
+                shipment_id: null,
+                repair_id: null,
+                activity_info: "delete user data"
+            })
             res.status(200).json({
                 message: "deleted user success"
             })
@@ -124,20 +148,36 @@ class userController{
 
     static async EditUser(req,res){
         try{
-            const {name,email, password,role, location,user_image} = req.body
+            const {name,email, password,role, location} = req.body
             const {id} = req.params
             const hashedPassword = hashPassword(password)
+            const imageUpdate = await cloudinary.uploader.upload(req.file.path,{folder: "profile_pictures"},function(err,result){
+                if(err){
+                    console.log(err);
+                    return res.status(500).json({
+                        status: "failed",
+                        message: "ERROR"
+                    })
+                }
+                return result
+            });
             const editUser = await users.update({
                 name:name,
                 email:email,
                 password:hashedPassword,
                 role:role,
                 location:location,
-                user_image: user_image
+                user_image: imageUpdate.secure_url
             },{
                 where:{id},
                 returning: true
             })
+            // const editUserLog = await log_activity.create({
+            //     user_id: req.userData.id,
+            //     shipment_id: null,
+            //     repair_id: null,
+            //     activity_info: "edit user data"
+            // })
             res.status(200).json({
                 status: "update users successful",
                 user: editUser[1][0]

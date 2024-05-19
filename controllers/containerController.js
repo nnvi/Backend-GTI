@@ -80,6 +80,7 @@ class containerController{
             const editcontainer = await container.update({
                 container_number: container_number,
                 age: age,
+                user_id: req.UserData.id,
                 location: location,
                 iddle_days: iddle_days,
                 type: type
