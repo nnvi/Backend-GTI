@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const {addContainer, getContainer, getContainerbyId, deleteContainer, editContainer} = require('../controllers/containerController')
 const ContAuthorization = require('../middlewares/authorization')
+const upload = require('../middlewares/multer')
 
 router.get('/getContainer',ContAuthorization,getContainer )
 router.post('/addContainer',ContAuthorization,addContainer)

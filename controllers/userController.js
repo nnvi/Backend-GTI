@@ -95,12 +95,12 @@ class userController{
                 user_image: result.secure_url
             })
 
-            const addLog = await log_activity.create({
-                user_id: req.userData.id,
-                shipment_id: null,
-                repair_id: null,
-                activity_info: "add new user"
-            })
+            // const addLog = await log_activity.create({
+            //     user_id: req.userData.id,
+            //     shipment_id: null,
+            //     repair_id: null,
+            //     activity_info: "add new user"
+            // })
             res.status(200).json({
                 user: create
             })

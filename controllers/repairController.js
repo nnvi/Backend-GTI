@@ -1,6 +1,9 @@
 const { v4: uuidv4 } = require('uuid');
 const {repair,container}= require('../models')
+const cloudinary = require('../middlewares/cloudinary')
+const multer = require('multer');
 
+const upload = multer({ dest: 'uploads/' });
 class RepairController{
     //get all Repair
     static async getRepair(req,res){
@@ -22,18 +25,29 @@ class RepairController{
     // add a new Repair
     static async addRepair(req,res){
         try{
-            const {container_number, remarks,image} = req.body
+            const {container_number, remarks} = req.body
+            
             const cont_id =  await container.findAll({
                 where:{
                     container_number: container_number
                 }
-            })      
+            }) 
+            const result = await cloudinary.uploader.upload(req.file.path,{folder: "repair_picture"},function(err,result){
+                if(err){
+                    console.log(err);
+                    return res.status(500).json({
+                        status: "failed",
+                        message: "ERROR"
+                    })
+                }
+                return result
+            });                 
             const create = await repair.create({
                 repair_uuid: uuidv4(),
                 user_id: req.UserData.id,
                 container_id: cont_id[0].id,
                 remarks: remarks,
-                image:image,                
+                image: result.secure_url,                
             })
             const updateCont =await container.update({
                 status:"Repair"
@@ -47,7 +61,8 @@ class RepairController{
             })
         }catch(err){
             res.status(500).json({
-                message: err
+                message: err.message,
+                
             })
         }
     }
@@ -85,7 +100,16 @@ class RepairController{
         try{
             const {container_number, remarks,image} = req.body     
             const {id} = req.params   
-            
+            const imageUpdate = await cloudinary.uploader.upload(req.file.path,{folder: "profile_pictures"},function(err,result){
+                if(err){
+                    console.log(err);
+                    return res.status(500).json({
+                        status: "failed",
+                        message: "ERROR"
+                    })
+                }
+                return result
+            });
             const cont_id =  await container.findAll({
                 where:{
                     container_number: container_number
@@ -95,7 +119,7 @@ class RepairController{
                 user_id: req.UserData.id,
                 container_id: cont_id[0].id,
                 remarks: remarks,
-                image:image,
+                image:imageUpdate.secure_url,
             },{
                 where:{id},
                 returning: true
