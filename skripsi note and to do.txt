@@ -1,18 +1,8 @@
-note yang belum dibuat :
-- auto adding log activity setiap perintah
-- filter
-- history container
-- api datauntuk dashboard
-
-note to do to check:
-- connect all shipmet - user - container - details shipment
-- shipment details can be combine to shipment file only(karena bersamaan dikerjakan)
-
-note:
-- tambahan data enum status shipment "Book"
-- booked by buat apa ya di shipment?
-
-
+link postman collection :
+https://gold-eclipse-209341.postman.co/workspace/New-Team-Workspace~407e5d2a-33a3-4375-9620-e9f1884d473a/collection/18604176-1186c5e7-fa47-4503-924e-0e665464aecd?action=share&creator=18604176
+https://gold-eclipse-209341.postman.co/workspace/New-Team-Workspace~407e5d2a-33a3-4375-9620-e9f1884d473a/collection/18604176-b292c970-1b32-4e3a-82b5-6cef94dff06d?action=share&creator=18604176
+https://gold-eclipse-209341.postman.co/workspace/New-Team-Workspace~407e5d2a-33a3-4375-9620-e9f1884d473a/collection/18604176-356ab81b-8524-4960-b9d8-8a5e785f9250?action=share&creator=18604176
+https://gold-eclipse-209341.postman.co/workspace/New-Team-Workspace~407e5d2a-33a3-4375-9620-e9f1884d473a/collection/18604176-9039fc69-7bb7-4b54-a842-a67afc11726c?action=share&creator=18604176
 //Dummy data untuk testing api//
 user data 
 {

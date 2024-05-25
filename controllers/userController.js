@@ -75,16 +75,7 @@ class userController{
         try{
             const {name,email, password,role, location} = req.body
             const hashedPassword = hashPassword(password)
-            const result = await cloudinary.uploader.upload(req.file.path,{folder: "profile_pictures"},function(err,result){
-                if(err){
-                    console.log(err);
-                    return res.status(500).json({
-                        status: "failed",
-                        message: "ERROR"
-                    })
-                }
-                return result
-            });
+            const result = await cloudinary.uploader.upload(req.file.path,{folder: "profile_pictures"});
             const create = await users.create({
                 user_uuid: uuidv4(),
                 name: name,
@@ -129,12 +120,12 @@ class userController{
         try{
             const {id}= req.params
             const deleteUser = await users.destroy({where:{id}})
-            const addLog = await log_activity.create({
-                user_id: req.userData.id,
-                shipment_id: null,
-                repair_id: null,
-                activity_info: "delete user data"
-            })
+            // const addLog = await log_activity.create({
+            //     user_id: req.userData.id,
+            //     shipment_id: null,
+            //     repair_id: null,
+            //     activity_info: "delete user data"
+            // })
             res.status(200).json({
                 message: "deleted user success"
             })
