@@ -52,6 +52,20 @@ class userController{
           }
     }
 
+    //get current user
+    static async currentUser (req,res){
+        try{
+            const getMe = await users.findByPk(req.UserData.id)
+            res.status(200).json({
+                user : getMe
+            })
+        }catch(err){
+            res.status(500).json({
+                message:err
+            })
+        }
+    } 
+
     //get all user
     static async getUser(req,res){
         try{
