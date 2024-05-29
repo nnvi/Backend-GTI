@@ -15,12 +15,30 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   shipment_detail.init({
-    POL: DataTypes.STRING(100),
-    POD: DataTypes.STRING(100),
-    ETD: DataTypes.DATE,
-    ETA: DataTypes.DATE,
-    stuffing_date: DataTypes.DATE,
-    shipper: DataTypes.STRING
+    POL: {
+      type:DataTypes.STRING(100),
+      allowNull: false
+    },
+    POD: {
+      type: DataTypes.STRING(100),
+      allowNull: false
+    },
+    ETD: {
+      type: DataTypes.DATE,
+      allowNull: false
+    },
+    ETA: {
+      type:DataTypes.DATE,
+      allowNull: false
+    },
+    stuffing_date: {
+      type:DataTypes.DATE,
+      allowNull: false
+    },
+    shipper: {
+      type:DataTypes.STRING,
+      allowNull:false
+    }
   }, {
     sequelize,
     modelName: 'shipment_detail',

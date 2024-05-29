@@ -1,16 +1,20 @@
 const { v4: uuidv4 } = require('uuid');
 const {container,users}= require('../models');
+const { Model } = require('sequelize');
 
 class containerController{
     //get all container
     static async getContainer(req,res){
         try{
-            const page = req.query.page
+            const page = (req.query.page== undefined? 1: req.query.page)
             const start = (page-1)*5
             const end = page*5
 
             const getAllContainer=await container.findAll({
-                include: users
+                include: [{
+                    model: users,
+                    attributes:{exclude:['password']}
+                }]
             })
             const pageContainer = getAllContainer.slice(start,end)
             res.status(200).json(pageContainer)
@@ -48,7 +52,12 @@ class containerController{
     static async getContainerbyId(req,res){
         try{
             const id = req.params.id
-            const getcontainerId = await container.findByPk(id)
+            const getcontainerId = await container.findByPk(id,{
+                include: [{
+                    model: users,
+                    attributes:{exclude:['password']}
+                }]
+            })
             res.status(200).json({container:getcontainerId})
         }catch(err){
             res.status(501).json({

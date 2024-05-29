@@ -4,15 +4,16 @@ const { verifyToken } = require("../helpers/jwt")
 const authentication = async (req, res, next) => {
   try {
     // cheack header, ada access token?
-    const { token } = req.headers
+    const authHeader = req.headers.authorization;
 
-    if (!token) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       throw {
         code: 401,
-        message: "Token not provided!"
-      }
+        message: "Token not provided !"
+      };
     }
 
+    const token = authHeader.split(' ')[1];
     // verify token
     const decode = verifyToken(token)
 

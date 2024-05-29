@@ -4,8 +4,8 @@ const {addContainer, getContainer, getContainerbyId, deleteContainer, editContai
 const ContAuthorization = require('../middlewares/authorization')
 const upload = require('../middlewares/multer')
 
-router.get('/getContainer',ContAuthorization,getContainer )
-router.post('/addContainer',ContAuthorization,addContainer)
+router.get('/container',ContAuthorization,getContainer )
+router.post('/container',ContAuthorization,addContainer)
 router.get('/container/:id',ContAuthorization,getContainerbyId)
 router.delete('/container/:id',ContAuthorization, deleteContainer)
 router.put('/container/:id',ContAuthorization, editContainer)

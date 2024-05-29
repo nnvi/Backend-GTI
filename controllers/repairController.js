@@ -8,11 +8,16 @@ class RepairController{
     //get all Repair
     static async getRepair(req,res){
         try{
-            const page = req.query.page
+            const page = (req.query.page== undefined? 1: req.query.page)
             const start = (page-1)*5
             const end = page*5
 
-            const getAllRepair=await repair.findAll()
+            const getAllRepair=await repair.findAll({
+                include: [{
+                    model: users,
+                    attributes:{exclude:['password']}
+                }, container]
+            })
             const pageRepair = getAllRepair.slice(start,end)
 
             res.status(200).json(pageRepair)
@@ -71,7 +76,12 @@ class RepairController{
     static async getRepairbyId(req,res){
         try{
             const id = req.params.id
-            const getRepairId = await repair.findByPk(id)
+            const getRepairId = await repair.findByPk(id,{
+                include: [{
+                    model: users,
+                    attributes:{exclude:['password']}
+                }, container]
+            })
             res.status(200).json({Repair:getRepairId})
         }catch(err){
             res.status(501).json({

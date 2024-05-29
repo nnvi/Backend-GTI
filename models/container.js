@@ -19,15 +19,56 @@ module.exports = (sequelize, DataTypes) => {
   container.init({
     container_uuid: {
       type: DataTypes.STRING,
-      defaultValue: DataTypes.UUIDV4
+      defaultValue: DataTypes.UUIDV4,
+      allowNull: false,
+      validate:{
+        isUUID:4
+      }
     },
-    container_number: DataTypes.STRING(100),
-    user_id: DataTypes.INTEGER,
-    age: DataTypes.INTEGER,
-    location: DataTypes.ENUM("Jakarta","Makassar","Medan","Surabaya"),
-    iddle_days: DataTypes.INTEGER,
-    type: DataTypes.ENUM("20 feet","40 feet"),
-    status: DataTypes.ENUM("Ready","In Use","Repair")
+    container_number: {
+      type:DataTypes.STRING(100),
+      allowNull:false,
+      unique: true,
+      validate:{
+        isNumeric:true
+      }
+    },
+    user_id: {
+      type:DataTypes.INTEGER,
+      allowNull: false,
+      validate:{
+        isNumeric:true
+      }
+    },
+    age: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate:{
+        isNumeric:true
+      }
+    },
+    location: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    iddle_days: {
+      type: DataTypes.INTEGER,
+      allowNull:false 
+    },
+    type: {
+      type: DataTypes.ENUM("20 feet","40 feet"),
+      allowNull:false,
+      validate:{
+        isIn:[["20 Feet","40 Feet"]]
+      }
+    },
+    status: {
+      type: DataTypes.ENUM("Ready","In Use","Repair"),
+      allowNull: false,
+      validate:{
+        isIn:[["Ready","In Use","Repair"]]
+      }
+    }
   }, {
     sequelize,
     modelName: 'container',

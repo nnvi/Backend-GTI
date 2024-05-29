@@ -12,15 +12,27 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       log_activity.belongsTo(models.users,{foreignKey:"user_id"}),
-      log_activity.belongsTo(models.shipment,{foreignKey:"shipmen_id"}),
+      log_activity.belongsTo(models.shipment,{foreignKey:"shipment_id"}),
       log_activity.belongsTo(models.repair,{foreignKey:"repair_id"})
     }
   }
   log_activity.init({
-    user_id: DataTypes.INTEGER,
-    shipment_id: DataTypes.INTEGER,
-    repair_id: DataTypes.INTEGER,
-    activity_info: DataTypes.STRING
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    shipment_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    repair_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    activity_info: {
+      type: DataTypes.STRING,
+      allowNull: false
+    }
   }, {
     sequelize,
     modelName: 'log_activity',

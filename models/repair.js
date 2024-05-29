@@ -19,12 +19,31 @@ module.exports = (sequelize, DataTypes) => {
   repair.init({
     repair_uuid: {
       type:DataTypes.STRING,
-      defaultValue:DataTypes.UUIDV4
+      defaultValue:DataTypes.UUIDV4,
+      allowNull: false,
+      validate:{
+        isUUID:4
+      }
     },
-    user_id: DataTypes.INTEGER,
-    container_id: DataTypes.INTEGER,
-    remarks: DataTypes.TEXT,
-    image: DataTypes.STRING
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    container_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    remarks: {
+      type: DataTypes.TEXT,
+      allowNull: false
+    },
+    image: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate:{
+        isUrl: true
+      }
+    }
   }, {
     sequelize,
     modelName: 'repair',

@@ -20,14 +20,49 @@ module.exports = (sequelize, DataTypes) => {
   users.init({
     user_uuid: {
       type: DataTypes.STRING,
-      defaultValue:DataTypes.UUIDV4
+      defaultValue:DataTypes.UUIDV4,
+      allowNull: false,
+      validate:{
+        isUUID:4
+      }
     },
-    name: DataTypes.STRING,
-    email: DataTypes.STRING(100),
-    password: DataTypes.STRING(100),
-    role: DataTypes.ENUM("Super Admin","Customer Service","Operasional"),
-    location: DataTypes.ENUM("Jakarta","Makassar","Medan","Surabaya"),
-    user_image: DataTypes.STRING
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    email: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      unique: true,
+      validate:{
+        isEmail:true
+      }
+    },
+    password: {
+      type:DataTypes.STRING(100),
+      allowNull: false
+    },
+    role: {
+      type: DataTypes.ENUM("Super Admin","Customer Service","Operasional"),
+      allowNull: false,
+      validate:{
+        isIn:[["Super Admin","Customer Service","Operasional"]]
+      }
+    },
+    location: {
+      type:DataTypes.ENUM("Jakarta","Makassar","Medan","Surabaya"),
+      allowNull: false,
+      validate:{
+        isIn:[["Jakarta","Makassar","Medan","Surabaya"]]
+      }
+    },
+    user_image: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate:{
+        isUrl: true
+      }
+    }
   }, {
     sequelize,
     modelName: 'users',

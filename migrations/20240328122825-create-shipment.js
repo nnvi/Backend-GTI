@@ -11,37 +11,58 @@ module.exports = {
       },
       shipment_uuid: {
         type: Sequelize.STRING,
-        defaultValue: Sequelize.UUIDV4
+        defaultValue: Sequelize.UUIDV4,
+        allowNull: false,
+        validate:{
+          isUUID:4
+        }
       },
       shipment_number: {
-        type: Sequelize.STRING(100)
+        type: Sequelize.STRING(100),
+        allowNull: false,
+        unique: true
       },
       user_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false
       },
       container_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false
       },
       return_empty: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
+        allowNull: false
       },
       status: {
-        type: Sequelize.ENUM("Arrive","Departure","Pickup","Return","Gate in","Accident")
+        type: Sequelize.ENUM("Arrive","Departure","Pickup","Return","Gate in","Accident"),
+        allowNull: false,
+        validate:{
+          isIn:[["Arrive","Departure","Pickup","Return","Gate in","Accident"]]
+        }
       },
       shipment_detail_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull:false
       },
       remark_description: {
-        type: Sequelize.TEXT
+        type: Sequelize.TEXT,
+        allowNull:false
       },
       image: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull:false,
+        validate:{
+          isUrl: true
+        }
       },
       active_status: {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.BOOLEAN,
+        allowNull:false
       },
       delete_by: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull:false
       },
       createdAt: {
         allowNull: false,

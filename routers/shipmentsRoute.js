@@ -3,10 +3,10 @@ const router = express.Router()
 const {addShipment, getShipment, getShipmentbyId, deleteShipment, editShipment} = require('../controllers/shipmentController')
 
 
-router.get('/getShipment',getShipment )
-router.post('/addShipment',addShipment)
-router.get('/Shipment/:id',getShipmentbyId)
-router.delete('/Shipment/:id', deleteShipment)
-router.put('/Shipment/:id', editShipment)
+router.get('/shipment',getShipment )
+router.post('/shipment',addShipment)
+router.get('/shipment/:id',getShipmentbyId)
+router.delete('/shipment/:id', deleteShipment)
+router.put('/shipment/:id', editShipment)
 
 module.exports =router

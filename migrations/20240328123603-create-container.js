@@ -11,28 +11,55 @@ module.exports = {
       },
       container_uuid: {
         type: Sequelize.STRING,
-        defaultValue: Sequelize.UUIDV4
+        defaultValue: Sequelize.UUIDV4,
+        allowNull: false,
+        validate:{
+          isUUID:4
+        }
       },
       container_number: {
-        type: Sequelize.STRING(100)
+        type: Sequelize.STRING(100),
+        allowNull:false,
+        unique: true,
+        validate:{
+          isNumeric:true
+        }
       },
       user_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        validate:{
+          isNumeric:true
+        }
       },
       age: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        validate:{
+          isNumeric:true
+        }
       },
       location: {
-        type: Sequelize.ENUM("Jakarta","Makassar","Medan","Surabaya")
+        type: Sequelize.STRING,
+        allowNull: false
       },
       iddle_days: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false
       },
       type: {
-        type: Sequelize.ENUM("20 feet","40 feet")
+        type: Sequelize.ENUM("20 feet","40 feet"),
+        allowNull:false,
+        validate:{
+          isIn:[["20 Feet","40 Feet"]]
+        }
       },
       status: {
-        type: Sequelize.ENUM("Ready","In Use","Repair")
+        type: Sequelize.ENUM("Ready","In Use","Repair"),
+        allowNull: false,
+        validate:{
+          isIn:[["Ready","In Use","Repair"]]
+        }
       },
       createdAt: {
         allowNull: false,

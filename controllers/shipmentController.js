@@ -5,12 +5,16 @@ class ShipmentController{
     //get all Shipment
     static async getShipment(req,res){
         try{
-            const page = req.query.page
+            const page = (req.query.page== undefined? 1: req.query.page)
             const start = (page-1)*5
             const end = page*5
 
             const getAllShipment=await shipment.findAll({
-                include: [users,container,shipment_detail]
+                include: [{
+                    model: users,
+                    attributes:{exclude:['password']}
+                },
+                container,shipment_detail]
             })
             const pageShipment = getAllShipment.slice(start,end)
 
@@ -60,7 +64,13 @@ class ShipmentController{
     static async getShipmentbyId(req,res){
         try{
             const id = req.params.id
-            const getShipmentId = await shipment.findByPk(id)
+            const getShipmentId = await shipment.findByPk(id,{
+                include: [{
+                    model: users,
+                    attributes:{exclude:['password']}
+                },
+                container,shipment_detail]
+            })
             res.status(200).json({shipment:getShipmentId})
         }catch(err){
             res.status(501).json({
