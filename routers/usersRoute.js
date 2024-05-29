@@ -8,7 +8,7 @@ const upload = require('../middlewares/multer')
 
 router.post('/login',login)
 router.use(authentication)
-router.get('/getMe',userAuthorization,currentUser)
+router.get('/getMe',currentUser)
 router.get('/user',userAuthorization,getUser)
 router.post('/user',upload.single('user_image'),userAuthorization,addUser)
 router.get('/user/:id',userAuthorization,getUserbyId)
