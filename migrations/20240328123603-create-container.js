@@ -9,7 +9,7 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      container_uuid: {
+      uuid: {
         type: Sequelize.STRING,
         defaultValue: Sequelize.UUIDV4,
         allowNull: false,
@@ -17,7 +17,7 @@ module.exports = {
           isUUID:4
         }
       },
-      container_number: {
+      number: {
         type: Sequelize.STRING(100),
         allowNull:false,
         unique: true

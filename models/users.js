@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   users.init({
-    user_uuid: {
+    uuid: {
       type: DataTypes.STRING,
       defaultValue:DataTypes.UUIDV4,
       allowNull: false,
@@ -56,7 +56,7 @@ module.exports = (sequelize, DataTypes) => {
         isIn:[["Jakarta","Makassar","Medan","Surabaya"]]
       }
     },
-    user_image: {
+    image: {
       type: DataTypes.STRING,
       allowNull: true,
       validate:{

@@ -5,9 +5,9 @@ const userAuthorization = require('../middlewares/authorization')
 const upload = require('../middlewares/multer')
 
 router.get('/users',userAuthorization,getUser)
-router.post('/users',upload.single('user_image'),userAuthorization,addUser)
-router.get('/users/:user_uuid',userAuthorization,getUserbyUuid)
-router.delete('/users/:user_uuid',userAuthorization, deleteUser)
-router.put('/users/:user_uuid',upload.single('user_image'), EditUser)
+router.post('/users',upload.single('image'),userAuthorization,addUser)
+router.get('/users/:uuid',userAuthorization,getUserbyUuid)
+router.delete('/users/:uuid',userAuthorization, deleteUser)
+router.put('/users/:uuid',upload.single('image'), EditUser)
 
 module.exports =router

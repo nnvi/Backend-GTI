@@ -116,13 +116,13 @@ class userController{
                 result = null
             }
             const create = await users.create({
-                user_uuid: uuidv4(),
+                uuid: uuidv4(),
                 name: name,
                 email: email,
                 password: hashedPassword,
                 role:role,
                 location: location,
-                user_image: (result== null? result: result.secure_url)
+                image: (result== null? result: result.secure_url)
             },function(err,result){
                 if(err){
                     console.log(err);
@@ -133,7 +133,6 @@ class userController{
                 }
                 return result
             })
-
             const addLog = await log_activity.create({
                 user_id: req.UserData.id,
                 shipment_id: null,
@@ -144,12 +143,12 @@ class userController{
                 message: "Add new User Successful",
                 user: {
                     id: create.id,
-                    user_uuid: create.user_uuid,
+                    uuid: create.uuid,
                     name: create.name,
                     email: create.email,
                     role: create.role,
                     location: create.location,
-                    user_image: create.user_image
+                    image: create.image
                 }
             })
         }catch(err){
@@ -162,10 +161,10 @@ class userController{
     //get user by id
     static async getUserbyUuid(req,res){
         try{
-            const user_uuid = req.params.user_uuid
+            const {uuid} = req.params
             const getUserId = await users.findOne({
                 where:{
-                    user_uuid: user_uuid
+                    uuid: uuid
                 },
                 attributes:{exclude:['password','createdAt','updatedAt']}
             })
@@ -181,17 +180,18 @@ class userController{
     //delete user by id
     static async deleteUser(req,res){
         try{
-            const {user_uuid}= req.params
+            const {uuid}= req.params
             const deleteUser = await users.destroy({
                 where:{
-                    user_uuid: user_uuid
+                    uuid: uuid
                 }
             })
+            console.log(deleteUser);
             const delUserLog = await log_activity.create({
                 user_id: req.UserData.id,
                 shipment_id: null,
                 repair_id: null,
-                activity_info: "delete user data"
+                activity_info: `delete user data`
             })
             res.status(200).json({
                 message: "deleted user success"
@@ -206,8 +206,7 @@ class userController{
     static async EditUser(req,res){
         try{
             const {name,email, password,role, location} = req.body
-            const {user_uuid} = req.params
-            console.log(user_uuid);
+            const {uuid} = req.params
             const hashedPassword = hashPassword(password)
             let result = {}
             if(req.file != null ||req.file != undefined){
@@ -230,10 +229,10 @@ class userController{
                 password:hashedPassword,
                 role:role,
                 location:location,
-                user_image: (result== null? result: result.secure_url)
+                image: (result== null? result: result.secure_url)
             },{
                 where:{
-                    user_uuid: user_uuid
+                    uuid: uuid
                 },
                 returning: true
             })
@@ -247,12 +246,12 @@ class userController{
                 status: "update users successful",
                 user: {
                     id: editUser[1][0].id,
-                    user_uuid: editUser[1][0].user_uuid,
+                    uuid: editUser[1][0].uuid,
                     name: editUser[1][0].name,
                     email: editUser[1][0].email,
                     role: editUser[1][0].role,
                     location: editUser[1][0].location,
-                    user_image: editUser[1][0].user_image
+                    image: editUser[1][0].image
                 }
             })
         }catch(err){

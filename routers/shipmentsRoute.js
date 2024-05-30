@@ -1,12 +1,12 @@
 const express = require('express')
 const router = express.Router()
-const {addShipment, getShipment, getShipmentbyId, deleteShipment, editShipment} = require('../controllers/shipmentController')
+const {addShipment, getShipment, getShipmentbyUuid, deleteShipment, editShipment} = require('../controllers/shipmentController')
 
 
-router.get('/shipment',getShipment )
-router.post('/shipment',addShipment)
-router.get('/shipment/:id',getShipmentbyId)
-router.delete('/shipment/:id', deleteShipment)
-router.put('/shipment/:id', editShipment)
+router.get('/shipments',getShipment )
+router.post('/shipments',addShipment)
+router.get('/shipments/:uuid',getShipmentbyUuid)
+router.delete('/shipments/:uuid', deleteShipment)
+router.put('/shipments/:uuid', editShipment)
 
 module.exports =router

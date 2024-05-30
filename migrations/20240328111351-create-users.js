@@ -9,7 +9,7 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      user_uuid: {
+      uuid: {
         type: Sequelize.STRING,
         defaultValue : Sequelize.UUIDV4,
         allowNull: false,
@@ -47,7 +47,7 @@ module.exports = {
           isIn:[["Jakarta","Makassar","Medan","Surabaya"]]
         }
       },
-      user_image: {
+      image: {
         type: Sequelize.STRING,
         allowNull: true,
         validate:{
