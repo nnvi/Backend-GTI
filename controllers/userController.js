@@ -43,7 +43,7 @@ class userController{
             const token = generateToken(response)
             
             res.status(200).json({
-              token: `Bearer ${token}`
+              token: token
             })
       
           } catch (error) {
