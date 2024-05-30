@@ -56,7 +56,7 @@ class userController{
     static async currentUser (req,res){
         try{
             const getMe = await users.findByPk(req.UserData.id,{
-                attributes:{exclude:['password']}
+                attributes:{exclude:['password','createdAt','updatedAt']}
             })
             res.status(200).json({
                 user : getMe
@@ -70,16 +70,25 @@ class userController{
     static async getUser(req,res){
         try{
             const page = (req.query.page== undefined? 1: req.query.page)
-            const start = (page-1)*5
-            const end = page*5
+            const pageSize = 5
+            const start = (page-1)*pageSize
+            const end = page*pageSize
+
+            const countUser = await users.count()
+            const totalPage = (Math.floor(countUser/pageSize))+1
 
             const getAllUser=await users.findAll({
-                attributes:{exclude:['password']}
+                attributes:{exclude:['password','createdAt','updatedAt','role','location','user_image']},
             })
 
             const paginationUser = getAllUser.slice(start,end)
 
-            res.status(200).json(paginationUser)
+            res.status(200).json({
+                page: page,
+                totalUsers: countUser,
+                totalPage: totalPage,
+                users: paginationUser
+            })
         }
         catch(err){
             res.status(500).json({message:err})
@@ -104,7 +113,7 @@ class userController{
                     return result
                 });
             }else{
-                result = {secure_url :"https://res.cloudinary.com/dktcfw5wm/image/upload/v1716986649/profile_pictures/qkeeloxrjoo8jmumgpmr.jpg"}
+                result = null
             }
             const create = await users.create({
                 user_uuid: uuidv4(),
@@ -113,7 +122,7 @@ class userController{
                 password: hashedPassword,
                 role:role,
                 location: location,
-                user_image: result.secure_url
+                user_image: (result== null? result: result.secure_url)
             },function(err,result){
                 if(err){
                     console.log(err);
@@ -151,11 +160,14 @@ class userController{
     }
 
     //get user by id
-    static async getUserbyId(req,res){
+    static async getUserbyUuid(req,res){
         try{
-            const id = req.params.id
-            const getUserId = await users.findByPk(id,{
-                attributes:{exclude:['password']}
+            const user_uuid = req.params.user_uuid
+            const getUserId = await users.findOne({
+                where:{
+                    user_uuid: user_uuid
+                },
+                attributes:{exclude:['password','createdAt','updatedAt']}
             })
 
             res.status(200).json({user:getUserId})
@@ -169,8 +181,12 @@ class userController{
     //delete user by id
     static async deleteUser(req,res){
         try{
-            const {id}= req.params
-            const deleteUser = await users.destroy({where:{id}})
+            const {user_uuid}= req.params
+            const deleteUser = await users.destroy({
+                where:{
+                    user_uuid: user_uuid
+                }
+            })
             const delUserLog = await log_activity.create({
                 user_id: req.UserData.id,
                 shipment_id: null,
@@ -180,7 +196,6 @@ class userController{
             res.status(200).json({
                 message: "deleted user success"
             })
-
         }catch(err){
             res.status(401).json({
                 message:err
@@ -191,7 +206,8 @@ class userController{
     static async EditUser(req,res){
         try{
             const {name,email, password,role, location} = req.body
-            const {id} = req.params
+            const {user_uuid} = req.params
+            console.log(user_uuid);
             const hashedPassword = hashPassword(password)
             let result = {}
             if(req.file != null ||req.file != undefined){
@@ -206,7 +222,7 @@ class userController{
                     return result
                 });
             }else{
-                result = {secure_url :"https://res.cloudinary.com/dktcfw5wm/image/upload/v1716986649/profile_pictures/qkeeloxrjoo8jmumgpmr.jpg"}
+                result = null
             }
             const editUser = await users.update({
                 name:name,
@@ -214,9 +230,11 @@ class userController{
                 password:hashedPassword,
                 role:role,
                 location:location,
-                user_image: result.secure_url
+                user_image: (result== null? result: result.secure_url)
             },{
-                where:{id},
+                where:{
+                    user_uuid: user_uuid
+                },
                 returning: true
             })
             const editUserLog = await log_activity.create({

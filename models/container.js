@@ -28,10 +28,7 @@ module.exports = (sequelize, DataTypes) => {
     container_number: {
       type:DataTypes.STRING(100),
       allowNull:false,
-      unique: true,
-      validate:{
-        isNumeric:true
-      }
+      unique: true
     },
     user_id: {
       type:DataTypes.INTEGER,
@@ -59,14 +56,14 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ENUM("20 feet","40 feet"),
       allowNull:false,
       validate:{
-        isIn:[["20 Feet","40 Feet"]]
+        isIn:[["20 feet","40 feet"]]
       }
     },
     status: {
-      type: DataTypes.ENUM("Ready","In Use","Repair"),
+      type: DataTypes.ENUM("Ready","In-Use","Repair"),
       allowNull: false,
       validate:{
-        isIn:[["Ready","In Use","Repair"]]
+        isIn:[["Ready","In-Use","Repair"]]
       }
     }
   }, {

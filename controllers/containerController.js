@@ -1,23 +1,30 @@
 const { v4: uuidv4 } = require('uuid');
-const {container,users}= require('../models');
-const { Model } = require('sequelize');
+const {container,users,log_activity}= require('../models');
+const { Model, where } = require('sequelize');
 
 class containerController{
     //get all container
     static async getContainer(req,res){
         try{
             const page = (req.query.page== undefined? 1: req.query.page)
-            const start = (page-1)*5
-            const end = page*5
+            const pageSize = 5
+            const start = (page-1)*pageSize
+            const end = page*pageSize
+
+            const countCont = await container.count()
+            const totalPage = (Math.floor(countCont/pageSize))+1
 
             const getAllContainer=await container.findAll({
-                include: [{
-                    model: users,
-                    attributes:{exclude:['password']}
-                }]
+                attributes:{exclude:['user_id','createdAt','updatedAt']}
             })
             const pageContainer = getAllContainer.slice(start,end)
-            res.status(200).json(pageContainer)
+            
+            res.status(200).json({
+                page: page,
+                totalUsers: countCont,
+                totalPage: totalPage,
+                users: pageContainer
+            })
         }
         catch(err){
             res.status(500).json({message:err})
@@ -38,8 +45,27 @@ class containerController{
                 type: type,
                 status: "Ready"
             })
+
+            const addContainerLog = await log_activity.create({
+                user_id: req.UserData.id,
+                shipment_id: null,
+                repair_id: null,
+                activity_info: "Added New Container"
+            })
+
             res.status(200).json({
-                container: create
+                message: "add new container successful",
+                container: {
+                    id: create.id,
+                    container_uuid: create.container_uuid,
+                    container_number: create.container_number,
+                    user_id: create.user_id,
+                    age: create.age,
+                    location: create.location,
+                    iddle_days: create.iddle_days,
+                    type: create.type,
+                    status: create.status
+                }
             })
         }catch(err){
             res.status(500).json({
@@ -49,13 +75,19 @@ class containerController{
     }
 
     //get container by id
-    static async getContainerbyId(req,res){
+    static async getContainerbyUuid(req,res){
         try{
-            const id = req.params.id
-            const getcontainerId = await container.findByPk(id,{
+            const {container_uuid} = req.params
+            const getcontainerId = await container.findOne({
+                where:{
+                    container_uuid: container_uuid
+                },
+                attributes:{
+                    exclude:['createdAt','updatedAt']
+                },
                 include: [{
                     model: users,
-                    attributes:{exclude:['password']}
+                    attributes:['name']
                 }]
             })
             res.status(200).json({container:getcontainerId})
@@ -69,8 +101,14 @@ class containerController{
     //delete container by id
     static async deleteContainer(req,res){
         try{
-            const {id}= req.params
-            const deletecontainer = await container.destroy({where:{id}})
+            const {container_uuid}= req.params
+            const deletecontainer = await container.destroy({where:{container_uuid:container_uuid}})
+            const delContainerLog = await log_activity.create({
+                user_id: req.UserData.id,
+                shipment_id: null,
+                repair_id: null,
+                activity_info: "Deleted Container"
+            })
             res.status(200).json({
                 message: "deleted container success"
             })
@@ -103,6 +141,23 @@ class containerController{
             })
         }catch(err){
             res.status(402).json({
+                message:err
+            })
+        }
+    }
+
+    //for dashboard get cont status
+    static async ContainerReady(req,res){
+        try{
+            const contReady=await container.findAll({
+                where:{status: "Ready" },
+                attributes:['container_number']
+            })
+            res.status(200).json({
+                container: contReady
+            })
+        }catch(err){
+            res.status(500).json({
                 message:err
             })
         }
