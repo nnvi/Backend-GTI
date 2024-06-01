@@ -30,29 +30,18 @@ class RepairController{
     // add a new Repair
     static async addRepair(req,res){
         try{
-            const {number, remarks} = req.body
-            
+            const {number, remarks} = req.body            
             const cont_id =  await container.findAll({
                 where:{
                     number: number
                 }
-            })
-            const result = await cloudinary.uploader.upload(req.file.path,{folder: "repair_picture"},function(err,result){
-                if(err){
-                    console.log(err);
-                    return res.status(500).json({
-                        status: "failed",
-                        message: "ERROR"
-                    })
-                }
-                return result
-            });                 
+            })                             
             const create = await repair.create({
                 uuid: uuidv4(),
-                id: req.UserData.id,
+                user_id: req.UserData.id,
                 container_id: cont_id[0].id,
                 remarks: remarks,
-                image: result.secure_url,                
+                image: req.file.path,                
             })
             const updateCont =await container.update({
                 status:"Repair"
@@ -125,19 +114,9 @@ class RepairController{
     }
 
     static async EditRepair(req,res){
-        try{
+        // try{
             const {number, remarks} = req.body     
             const {id} = req.params   
-            const imageUpdate = await cloudinary.uploader.upload(req.file.path,{folder: "profile_pictures"},function(err,result){
-                if(err){
-                    console.log(err);
-                    return res.status(500).json({
-                        status: "failed",
-                        message: "ERROR"
-                    })
-                }
-                return result
-            });
             const cont_id =  await container.findAll({
                 where:{
                     number: number
@@ -147,7 +126,7 @@ class RepairController{
                 user_id: req.UserData.id,
                 container_id: cont_id[0].id,
                 remarks: remarks,
-                image:imageUpdate.secure_url,
+                image:req.file.path,
             },{
                 where:{id},
                 returning: true
@@ -169,11 +148,11 @@ class RepairController{
                 status: "update Repairs successful",
                 Repair: editRepair[1][0]
             })
-        }catch(err){
-            res.status(402).json({
-                message:err.message
-            })
-        }
+        // }catch(err){
+        //     res.status(402).json({
+        //         message:err.message
+        //     })
+        // }
     }
 }
 

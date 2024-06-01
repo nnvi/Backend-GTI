@@ -102,21 +102,7 @@ class userController{
         try{
             const {name,email, password,role, location} = req.body
             const hashedPassword = hashPassword(password)
-            let result = {}
-            if(req.file != null ||req.file != undefined){
-                result = await cloudinary.uploader.upload(req.file.path,{folder: "profile_pictures"},function(err,result){
-                    if(err){
-                        console.log(err);
-                        return res.status(500).json({
-                            status: "failed upload pictures",
-                            message: err
-                        })
-                    }
-                    return result
-                });
-            }else{
-                result = null
-            }
+            
             const create = await users.create({
                 uuid: uuidv4(),
                 name: name,
@@ -124,7 +110,7 @@ class userController{
                 password: hashedPassword,
                 role:role,
                 location: location,
-                image: (result== null? result: result.secure_url)
+                image: req.file.path
             },function(err,result){
                 if(err){
                     console.log(err);
@@ -210,28 +196,13 @@ class userController{
             const {name,email, password,role, location} = req.body
             const {uuid} = req.params
             const hashedPassword = hashPassword(password)
-            let result = {}
-            if(req.file != null ||req.file != undefined){
-                result = await cloudinary.uploader.upload(req.file.path,{folder: "profile_pictures"},function(err,result){
-                    if(err){
-                        console.log(err);
-                        return res.status(500).json({
-                            status: "failed upload pictures",
-                            message: err
-                        })
-                    }
-                    return result
-                });
-            }else{
-                result = null
-            }
             const editUser = await users.update({
                 name:name,
                 email:email,
                 password:hashedPassword,
                 role:role,
                 location:location,
-                image: (result== null? result: result.secure_url)
+                image: req.file.path
             },{
                 where:{
                     uuid: uuid
@@ -258,7 +229,7 @@ class userController{
             })
         }catch(err){
             res.status(402).json({
-                message:err
+                message:err.message
             })
         }
     }
