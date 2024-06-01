@@ -17,7 +17,7 @@ module.exports = {
           isUUID:4
         }
       },
-      shipment_number: {
+      number: {
         type: Sequelize.STRING(100),
         allowNull: false,
         unique: true
@@ -32,7 +32,7 @@ module.exports = {
       },
       return_empty: {
         type: Sequelize.DATE,
-        allowNull: false
+        allowNull: true
       },
       status: {
         type: Sequelize.ENUM("Arrive","Departure","Pickup","Return","Gate in","Accident"),
@@ -47,11 +47,11 @@ module.exports = {
       },
       remark_description: {
         type: Sequelize.TEXT,
-        allowNull:false
+        allowNull:true
       },
       image: {
         type: Sequelize.STRING,
-        allowNull:false,
+        allowNull:true,
         validate:{
           isUrl: true
         }
@@ -62,7 +62,7 @@ module.exports = {
       },
       delete_by: {
         type: Sequelize.STRING,
-        allowNull:false
+        allowNull:true
       },
       createdAt: {
         allowNull: false,

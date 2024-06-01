@@ -11,7 +11,7 @@ module.exports = {
       password: "$2b$10$fzwCu3A5AxnuFCDTkLQdnOMUrYDPHHs0KO9fNL0H1xhXfvPQSi50q",// password: superadmin
       role: "Super Admin",
       location: "Jakarta",
-      user_image: "https://source.unsplash.com/200x200/?woman",
+      image: "https://source.unsplash.com/200x200/?woman",
       createdAt: new Date(),
       updatedAt: new Date()
     }]);

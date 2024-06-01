@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-const {repair,container,log_activity}= require('../models')
+const {repair,container,users,log_activity}= require('../models')
 const cloudinary = require('../middlewares/cloudinary')
 const multer = require('multer');
 
@@ -36,7 +36,7 @@ class RepairController{
                 where:{
                     number: number
                 }
-            }) 
+            })
             const result = await cloudinary.uploader.upload(req.file.path,{folder: "repair_picture"},function(err,result){
                 if(err){
                     console.log(err);
@@ -49,7 +49,7 @@ class RepairController{
             });                 
             const create = await repair.create({
                 uuid: uuidv4(),
-                user_id: req.UserData.id,
+                id: req.UserData.id,
                 container_id: cont_id[0].id,
                 remarks: remarks,
                 image: result.secure_url,                
@@ -78,13 +78,13 @@ class RepairController{
         }
     }
 
-    //get Repair by Uuid
+    //get Repair by id
     static async getRepairbyUuid(req,res){
         try{
-            const {uuid} = req.params
+            const {repair_uuid} = req.params
             const getrepairId = await repair.findOne({
                 where:{
-                    uuid: uuid
+                    uuid: repair_uuid
                 },
                 attributes:{
                     exclude:['createdAt','updatedAt']
@@ -111,7 +111,7 @@ class RepairController{
                 user_id: req.UserData.id,
                 shipment_id: null,
                 repair_id: null,
-                activity_info: "Deleted A Repairment"
+                activity_info: "Deleted a Repairment"
             })
             res.status(200).json({
                 message: "deleted Repair success"

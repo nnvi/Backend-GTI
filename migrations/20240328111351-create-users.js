@@ -47,7 +47,7 @@ module.exports = {
           isIn:[["Jakarta","Makassar","Medan","Surabaya"]]
         }
       },
-      user_image: {
+      image: {
         type: Sequelize.STRING,
         allowNull: true,
         validate:{

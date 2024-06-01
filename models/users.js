@@ -56,7 +56,7 @@ module.exports = (sequelize, DataTypes) => {
         isIn:[["Jakarta","Makassar","Medan","Surabaya"]]
       }
     },
-    user_image: {
+    image: {
       type: DataTypes.STRING,
       allowNull: true,
       validate:{

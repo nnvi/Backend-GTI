@@ -12,7 +12,7 @@ const {login, currentUser} = require('../controllers/userController')
 router.post('/login',login)
 router.use(authentication)
 router.get('/getMe',currentUser)
-router.get('/log',userAuthorization,getLogActivity)
+router.get('/logs',userAuthorization,getLogActivity)
 router.use(users,repair,containers,shipments)
 
 module.exports= router
