@@ -123,7 +123,7 @@ class RepairController{
     }
 
     static async EditRepair(req,res){
-        // try{
+        try{
             const {number, remarks} = req.body     
             const {id} = req.params   
             const cont_id =  await container.findAll({
@@ -157,11 +157,11 @@ class RepairController{
                 status: "update Repairs successful",
                 Repair: editRepair[1][0]
             })
-        // }catch(err){
-        //     res.status(402).json({
-        //         message:err.message
-        //     })
-        // }
+        }catch(err){
+            res.status(402).json({
+                message:err.message
+            })
+        }
     }
 }
 
