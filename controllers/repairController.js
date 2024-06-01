@@ -8,9 +8,13 @@ class RepairController{
     //get all Repair
     static async getRepair(req,res){
         try{
-            const page = (req.query.page== undefined? 1: req.query.page)
-            const start = (page-1)*5
-            const end = page*5
+            const page = parseInt(req.query.page== undefined? 1: req.query.page)
+            const pageSize = 5
+            const start = (page-1)*pageSize
+            const end = page*pageSize
+
+            const countRepair = await repair.count()
+            const totalPage = (countRepair%pageSize !=0? (Math.floor(countRepair/pageSize))+1:(Math.floor(countRepair/pageSize)))
 
             const getAllRepair=await repair.findAll({
                 include: [{
@@ -20,7 +24,12 @@ class RepairController{
             })
             const pageRepair = getAllRepair.slice(start,end)
 
-            res.status(200).json(pageRepair)
+            res.status(200).json({
+                page: page,
+                totalRepair: countRepair,
+                totalPage: totalPage,
+                repairs: pageRepair
+            })
         }
         catch(err){
             res.status(500).json({message:err})
@@ -67,7 +76,7 @@ class RepairController{
                 repair_id: null,
                 activity_info: "Added New Repairment"
             })
-            res.status(200).json({
+            res.status(201).json({
                 repair: create
             })
         }catch(err){

@@ -49,10 +49,7 @@ module.exports = {
       },
       image: {
         type: Sequelize.STRING,
-        allowNull: true,
-        validate:{
-          isUrl: true
-        }
+        allowNull: true
       },
       createdAt: {
         allowNull: false,
