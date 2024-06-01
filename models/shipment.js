@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   shipment.init({
-    shipment_uuid: {
+    uuid: {
       type: DataTypes.STRING,
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
         isUUID:4
       }
     },
-    shipment_number: {
+    number: {
       type: DataTypes.STRING(100),
       allowNull: false,
       unique: true

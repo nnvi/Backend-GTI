@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-const {repair,container}= require('../models')
+const {repair,container,log_activity}= require('../models')
 const cloudinary = require('../middlewares/cloudinary')
 const multer = require('multer');
 
@@ -30,11 +30,11 @@ class RepairController{
     // add a new Repair
     static async addRepair(req,res){
         try{
-            const {container_number, remarks} = req.body
+            const {number, remarks} = req.body
             
             const cont_id =  await container.findAll({
                 where:{
-                    container_number: container_number
+                    number: number
                 }
             }) 
             const result = await cloudinary.uploader.upload(req.file.path,{folder: "repair_picture"},function(err,result){
@@ -48,7 +48,7 @@ class RepairController{
                 return result
             });                 
             const create = await repair.create({
-                repair_uuid: uuidv4(),
+                uuid: uuidv4(),
                 user_id: req.UserData.id,
                 container_id: cont_id[0].id,
                 remarks: remarks,
@@ -61,6 +61,12 @@ class RepairController{
                     id:cont_id[0].id
                 }
             })
+            const addRepairLog = await log_activity.create({
+                user_id: req.UserData.id,
+                shipment_id: null,
+                repair_id: null,
+                activity_info: "Added New Repairment"
+            })
             res.status(200).json({
                 repair: create
             })
@@ -72,29 +78,41 @@ class RepairController{
         }
     }
 
-    //get Repair by id
-    static async getRepairbyId(req,res){
+    //get Repair by Uuid
+    static async getRepairbyUuid(req,res){
         try{
-            const id = req.params.id
-            const getRepairId = await repair.findByPk(id,{
+            const {uuid} = req.params
+            const getrepairId = await repair.findOne({
+                where:{
+                    uuid: uuid
+                },
+                attributes:{
+                    exclude:['createdAt','updatedAt']
+                },
                 include: [{
-                    model: users,
-                    attributes:{exclude:['password']}
-                }, container]
+                    model: container,
+                    attributes:['number','age','location']
+                }]
             })
-            res.status(200).json({Repair:getRepairId})
+            res.status(200).json({repair:getrepairId})
         }catch(err){
             res.status(501).json({
-                message:err
+                message:err.message
             })
         }
-    }
+    }    
 
     //delete Repair by id
     static async deleteRepair(req,res){
         try{
             const {id}= req.params
             const deleteRepair = await repair.destroy({where:{id}})
+            const addRepairLog = await log_activity.create({
+                user_id: req.UserData.id,
+                shipment_id: null,
+                repair_id: null,
+                activity_info: "Deleted A Repairment"
+            })
             res.status(200).json({
                 message: "deleted Repair success"
             })
@@ -108,7 +126,7 @@ class RepairController{
 
     static async EditRepair(req,res){
         try{
-            const {container_number, remarks,image} = req.body     
+            const {number, remarks} = req.body     
             const {id} = req.params   
             const imageUpdate = await cloudinary.uploader.upload(req.file.path,{folder: "profile_pictures"},function(err,result){
                 if(err){
@@ -122,9 +140,9 @@ class RepairController{
             });
             const cont_id =  await container.findAll({
                 where:{
-                    container_number: container_number
+                    number: number
                 }
-            }) 
+            })
             const editRepair = await repair.update({
                 user_id: req.UserData.id,
                 container_id: cont_id[0].id,
@@ -141,13 +159,19 @@ class RepairController{
                     id:cont_id[0].id
                 }
             })
+            const addRepairLog = await log_activity.create({
+                user_id: req.UserData.id,
+                shipment_id: null,
+                repair_id: null,
+                activity_info: "Updated a Repairment"
+            })
             res.status(200).json({
                 status: "update Repairs successful",
                 Repair: editRepair[1][0]
             })
         }catch(err){
             res.status(402).json({
-                message:err
+                message:err.message
             })
         }
     }

@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   repair.init({
-    repair_uuid: {
+    uuid: {
       type:DataTypes.STRING,
       defaultValue:DataTypes.UUIDV4,
       allowNull: false,

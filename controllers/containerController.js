@@ -23,7 +23,7 @@ class containerController{
                 page: page,
                 totalUsers: countCont,
                 totalPage: totalPage,
-                users: pageContainer
+                containers: pageContainer
             })
         }
         catch(err){
@@ -34,10 +34,10 @@ class containerController{
     // add a new container
     static async addContainer(req,res){
         try{
-            const {container_number, age, location, iddle_days, type} = req.body
+            const {number, age, location, iddle_days, type} = req.body
             const create = await container.create({
-                container_uuid: uuidv4(),
-                container_number: container_number,
+                uuid: uuidv4(),
+                number: number,
                 user_id: req.UserData.id,
                 age: age,
                 location: location,
@@ -57,8 +57,8 @@ class containerController{
                 message: "add new container successful",
                 container: {
                     id: create.id,
-                    container_uuid: create.container_uuid,
-                    container_number: create.container_number,
+                    uuid: create.container_uuid,
+                    number: create.container_number,
                     user_id: create.user_id,
                     age: create.age,
                     location: create.location,
@@ -80,7 +80,7 @@ class containerController{
             const {container_uuid} = req.params
             const getcontainerId = await container.findOne({
                 where:{
-                    container_uuid: container_uuid
+                    uuid: container_uuid
                 },
                 attributes:{
                     exclude:['createdAt','updatedAt']
@@ -102,7 +102,7 @@ class containerController{
     static async deleteContainer(req,res){
         try{
             const {container_uuid}= req.params
-            const deletecontainer = await container.destroy({where:{container_uuid:container_uuid}})
+            const deletecontainer = await container.destroy({where:{uuid:container_uuid}})
             const delContainerLog = await log_activity.create({
                 user_id: req.UserData.id,
                 shipment_id: null,
@@ -125,7 +125,7 @@ class containerController{
             const {container_number, age, location, iddle_days, type} = req.body
             const {id} = req.params
             const editcontainer = await container.update({
-                container_number: container_number,
+                number: container_number,
                 age: age,
                 user_id: req.UserData.id,
                 location: location,
