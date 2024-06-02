@@ -14,8 +14,8 @@ const upload = multer({storage: storage})
 
 router.get('/repairs',getRepair )
 router.post('/repairs',upload.single('image'),addRepair)
-router.get('/repairs/:repair_uuid',getRepairbyUuid)
-router.delete('/repairs/:repair_uuid', deleteRepair)
+router.get('/repairs/:uuid',getRepairbyUuid)
+router.delete('/repairs/:uuid', deleteRepair)
 router.put('/repairs/:uuid',upload.single('image'), EditRepair)
 
 module.exports =router
