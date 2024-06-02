@@ -30,20 +30,21 @@ class RepairController{
     static async addRepair(req,res){
         try{
             const {number, remarks} = req.body            
-            const cont_id =  await container.findAll({
+            const cont_id =  await container.findOne({
                 where:{
                     number: number
-                }
+                },
+                
             })  
-            console.log(cont_id);
-            // masih error 
-            // if(cont_id.status == "Repair"){
-            //     return res.status(400).json({ Pesan: 'Kontainer sudah dalam perbaikan' });
-            //   };                        
+            console.log(cont_id.status);
+            
+            if(cont_id.status == "Repair"){
+                return res.status(400).json({ Pesan: 'Kontainer sudah dalam perbaikan' });
+              };                        
             const create = await repair.create({
                 uuid: uuidv4(),
                 user_id: req.UserData.id,
-                container_id: cont_id[0].id,
+                container_id: cont_id.id,
                 remarks: remarks,
                 image: req.file?req.file.path:null,                
             })
@@ -51,7 +52,7 @@ class RepairController{
                 status:"Repair"
             },{
                 where:{
-                    id:cont_id[0].id
+                    id:cont_id.id
                 }
             })
             const addRepairLog = await log_activity.create({
