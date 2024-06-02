@@ -120,7 +120,7 @@ class userController{
                 password: hashedPassword,
                 role:role,
                 location: location,
-                image: req.file.path
+                image: (req.file== undefined? null :req.file.path)
             },function(err,result){
                 if(err){
                     console.log(err);
@@ -212,7 +212,7 @@ class userController{
                 password:hashedPassword,
                 role:role,
                 location:location,
-                image: req.file.path
+                image: (req.file== undefined? null :req.file.path)
             },{
                 where:{
                     uuid: uuid
