@@ -11,7 +11,11 @@ class ShipmentController{
             const start = (page-1)*pageSize
             const end = page*pageSize
 
-            const countShipment = await shipment.count()
+            const countShipment = await shipment.count({
+                where:{
+                    active_status: true
+                }
+            })
             const totalPage = (countShipment%pageSize !=0? (Math.floor(countShipment/pageSize))+1:(Math.floor(countShipment/pageSize)))
 
             const getAllShipment=await shipment.findAll({
@@ -76,7 +80,6 @@ class ShipmentController{
                 status:status,
                 shipment_detail_id: createdetails.id,
                 remark_description: null,
-                image: null,
                 active_status: true,
                 delete_by: null
             })
@@ -90,9 +93,9 @@ class ShipmentController{
             })
             const addShipmentLog = await log_activity.create({
                 user_id: req.UserData.id,
-                shipment_id: null,
+                shipment_id: create.id,
                 repair_id: null,
-                activity_info: "Added New Shipment"
+                activity_info: `Added Shipment ${create.number}`
             })
             res.status(201).json({
                 message:"add shipment successfull",
@@ -151,6 +154,17 @@ class ShipmentController{
     static async deleteShipment(req,res){
         try{
             const {uuid}= req.params
+            const getShipment = await shipment.findOne({
+                where:{uuid:uuid},
+                attributes:['number','id','active_status']
+            })
+            if(getShipment ==null || getShipment.active_status==false){
+                throw{
+                    code: 401,
+                    message: (getShipment==null?`${uuid} not found`:`${getShipment.number} not found`)
+                }
+            }
+
             const deleteShipment = await shipment.update({
                 active_status: false,
                 delete_by: req.UserData.email
@@ -159,12 +173,13 @@ class ShipmentController{
             })
             const addShipmentLog = await log_activity.create({
                 user_id: req.UserData.id,
-                shipment_id: null,
+                shipment_id: getShipment.id,
                 repair_id: null,
-                activity_info: "Deleted a Shipment"
+                activity_info: `delete shipment ${getShipment.number}`
             })
+            
             res.status(200).json({
-                message: "deleted Shipment success"
+                message: `delete shipment ${getShipment.number} successful`
             })
 
         }catch(err){
@@ -177,31 +192,70 @@ class ShipmentController{
     //edit data shipment by uuid
     static async editShipment(req,res){
         try{
-            const {number, container_number, return_empty, status, shipment_detail_id, remark_description, image} = req.body
+            const {number, status,POL, POD, ETD, ETA, stuffing_date, shipper, remark_description} = req.body
             const {uuid} = req.params
-            const cont_id =  await container.findAll({
-                where:{
-                    number: container_number
-                }
+            let container_number = req.body.container_number
+            
+            const getShipment = await shipment.findOne({
+                where:{uuid:uuid},
+                attributes:['shipment_detail_id','container_id']
             })
+
+            const updateShipmentDetails = await shipment_detail.update({
+                POL,POD,ETD,ETA,stuffing_date,shipper
+            },{
+                where:{
+                    id: getShipment.shipment_detail_id
+                },
+                attributes:['id'],
+                returning: true
+            })
+
+            if(container_number != getShipment.container_id){
+                const updateContStatus = await container.update({
+                    status: "Ready"
+                },{
+                    where:{
+                        id: getShipment.container_id
+                    }
+                })
+                const cont_id =  await container.findOne({
+                    where:{
+                        number: container_number
+                    }
+                })
+                if(cont_id.status!= "Ready"){
+                    throw{
+                        code:401,
+                        message:`container ${container_number} status ${cont_id.status}, please choose another container`
+                    }
+                }
+                container_number = cont_id.id
+            }
+
+            if(status=="Return"){
+                const updateContainer = await container.update({
+                    location: POD,
+                    iddle_days: 0,
+                    status:"Ready"
+                })
+            }
             const editShipment = await shipment.update({
                 number: number,
-                user_id: req.UserData.id,
-                container_id: cont_id[0].id,
-                return_empty: return_empty,
+                container_id: container_number,
+                return_empty: (status=="Return"? new Date():null),
                 status:status,
-                shipment_detail_id: shipment_detail_id,
-                remark_description: remark_description,
-                image: image
+                shipment_detail_id: updateShipmentDetails[1][0].id,
+                remark_description: (status== "Pickup"|| status=="Accident" ? remark_description:null)
             },{
                 where:{uuid:uuid},
                 returning: true
             })
             const addShipmentLog = await log_activity.create({
                 user_id: req.UserData.id,
-                shipment_id: null,
+                shipment_id: editShipment[1][0].id,
                 repair_id: null,
-                activity_info: "Updated a Shipment"
+                activity_info: `Updated Shipment ${editShipment[1][0].number}`
             })
             res.status(200).json({
                 status: "update Shipments successful",
@@ -210,6 +264,38 @@ class ShipmentController{
         }catch(err){
             res.status(402).json({
                 message:err
+            })
+        }
+    }
+
+    static async getShipmentDashboard(req,res){
+        try{
+            const dashboardShipment = await shipment.findAll({
+                attributes: ['id','number'],
+                include:{
+                    model:users,
+                    attributes:['id','location']
+                }
+            })
+            function ShipmentsByLocation(data, location) {
+                return data.filter(item => item.user.location === location).length;
+            }
+            const ShipmentJakarta = ShipmentsByLocation(dashboardShipment,"Jakarta")
+            const ShipmentMedan = ShipmentsByLocation(dashboardShipment,"Medan")
+            const ShipmentSurabaya = ShipmentsByLocation(dashboardShipment,"Surabaya")
+            const ShipmentMakassar = ShipmentsByLocation(dashboardShipment,"Makassar")
+            res.status(200).json({
+                message : "Statistik Total Shipment per Cabang",
+                data : {
+                    medan: ShipmentMedan,
+                    jakarta: ShipmentJakarta,
+                    makassar: ShipmentMakassar,
+                    surabaya: ShipmentSurabaya
+                }
+            })
+        }catch(err){
+            res.status(500).json({
+                message: err
             })
         }
     }

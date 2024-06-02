@@ -1,5 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
-const {container,users,log_activity}= require('../models');
+const {container,users,log_activity,shipment}= require('../models');
+const { where } = require('sequelize');
 
 class containerController{
     //get all container
@@ -227,6 +228,32 @@ class containerController{
         }catch(err){
             res.status(500).json({
                 message:err
+            })
+        }
+    }
+
+    static async historyContainer(req,res){
+        try{
+            const {uuid}= req.params
+            const cont_id = await container.findOne({
+                where: {uuid: uuid},
+                attributes:['id']
+            })
+            const getHistory = await shipment.findAll({
+                where: {container_id: cont_id.id},
+                attributes:['number'],
+                include:{
+                    model: users,
+                    attributes:['name']
+                }
+            })
+            res.status(200).json({
+                message:`Daftar Shipment container ${uuid}`,
+                history: getHistory
+            })
+        }catch(err){
+            res.status(500).json({
+                message: err
             })
         }
     }
