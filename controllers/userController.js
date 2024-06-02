@@ -267,7 +267,7 @@ class userController{
                 password:hashedPassword? hashedPassword:getUser.password,
                 role:role,
                 location:location,
-                image: req.file.path
+                image: (req.file==undefined?getUser.image:req.file.path)
             },{
                 where:{uuid: uuid},
                 returning: true
