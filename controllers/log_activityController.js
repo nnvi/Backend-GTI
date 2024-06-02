@@ -5,7 +5,7 @@ class LogActivityController{
     //get all LogActivity
     static async getLogActivity(req,res){
         try{
-            const page = (req.query.page== undefined? 1: req.query.page)
+            const page = parseInt(req.query.page== undefined? 1: req.query.page)
             const pageSize = 5
             const start = (page-1)*pageSize
             const end = page*pageSize

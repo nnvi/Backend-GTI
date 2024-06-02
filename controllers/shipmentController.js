@@ -1,23 +1,27 @@
 const { v4: uuidv4 } = require('uuid');
 const {shipment,container,shipment_detail,users, log_activity}= require('../models');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 
 class ShipmentController{
     //get all Shipment
     static async getShipment(req,res){
         try{
-            const page = (req.query.page== undefined? 1: req.query.page)
+            const page = parseInt(req.query.page== undefined? 1: req.query.page)
             const pageSize = 5
             const start = (page-1)*pageSize
             const end = page*pageSize
 
             const countShipment = await shipment.count()
-            const totalPage = (Math.floor(countShipment/pageSize))+1
+            const totalPage = (countShipment%pageSize !=0? (Math.floor(countShipment/pageSize))+1:(Math.floor(countShipment/pageSize)))
 
             const getAllShipment=await shipment.findAll({
+                where:{
+                    active_status:true
+                },
+                attributes:['id','uuid','status'],
                 include: [{
                     model: shipment_detail,
-                    attributes:['shipper','POL','POD']
+                    attributes:['shipper','POL','POD','ETD']
                 }]
             })
             const pageShipment = getAllShipment.slice(start,end)
@@ -26,7 +30,7 @@ class ShipmentController{
                 page: page,
                 totalShipment: countShipment,
                 totalPage: totalPage,
-                containers: pageShipment
+                shipment: pageShipment
             })
         }
         catch(err){
@@ -46,8 +50,23 @@ class ShipmentController{
                     number: container_number
                 }
             })
-            // const cont = cont_id.map(cont_id=>cont_id.id)
-  
+
+            const checkShip = await shipment.findOne({
+                where:{number: number}
+            })
+            if(checkShip!=null){
+                throw{
+                    code: 401,
+                    message: "Shipment number recorded, Please enter another number"
+                }
+            }
+
+            if(cont_id[0].status!= "Ready"){
+                throw{
+                    code:401,
+                    message:`container ${container_number} status ${cont_id[0].status}, please choose another container`
+                }
+            }
             const create = await shipment.create({
                 uuid: uuidv4(),
                 number: number,
@@ -75,9 +94,22 @@ class ShipmentController{
                 repair_id: null,
                 activity_info: "Added New Shipment"
             })
-            res.status(200).json({
+            res.status(201).json({
                 message:"add shipment successfull",
-                Shipment: create
+                Shipment: {
+                    id: create.id,
+                    uuid: create.uuid,
+                    number: create.number,
+                    user_id: create.user_id,
+                    container_id: create.container_id,
+                    return_empty: create.return_empty,
+                    status: create.status,
+                    shipment_detail_id: create.createdetails_id,
+                    remark_description: create.remark_description,
+                    image: create.image,
+                    active_status: create.active_status,
+                    delete_by: create.delete_by
+                }
             })
         }catch(err){
             res.status(500).json({
@@ -94,7 +126,7 @@ class ShipmentController{
                 where:{
                     uuid:uuid
                 },
-                attributes:['number','status'],
+                attributes:['uuid','number','status','active_status','delete_by'],
                 include: [{
                     model: users,
                     attributes:['name']
@@ -119,7 +151,12 @@ class ShipmentController{
     static async deleteShipment(req,res){
         try{
             const {uuid}= req.params
-            const deleteShipment = await shipment.destroy({where:{uuid:uuid}})
+            const deleteShipment = await shipment.update({
+                active_status: false,
+                delete_by: req.UserData.email
+            },
+                {where:{uuid:uuid}
+            })
             const addShipmentLog = await log_activity.create({
                 user_id: req.UserData.id,
                 shipment_id: null,
@@ -140,20 +177,24 @@ class ShipmentController{
     //edit data shipment by uuid
     static async editShipment(req,res){
         try{
-            const {Shipment_number, user_id, container_id, return_empty, status, shipment_detail_id, remark_description, image, active_status, delete_by} = req.body
-            const {id} = req.params
+            const {number, container_number, return_empty, status, shipment_detail_id, remark_description, image} = req.body
+            const {uuid} = req.params
+            const cont_id =  await container.findAll({
+                where:{
+                    number: container_number
+                }
+            })
             const editShipment = await shipment.update({
-                shipment_number: Shipment_number,
+                number: number,
                 user_id: req.UserData.id,
-                container_id: container_id,
+                container_id: cont_id[0].id,
                 return_empty: return_empty,
                 status:status,
                 shipment_detail_id: shipment_detail_id,
                 remark_description: remark_description,
-                image: image,
-                active_status: active_status,
+                image: image
             },{
-                where:{id},
+                where:{uuid:uuid},
                 returning: true
             })
             const addShipmentLog = await log_activity.create({

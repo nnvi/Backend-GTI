@@ -49,7 +49,7 @@ module.exports = {
       },
       image: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       createdAt: {
         allowNull: false,

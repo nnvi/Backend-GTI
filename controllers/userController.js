@@ -83,13 +83,13 @@ class userController{
     //get all user
     static async getUser(req,res){
         try{
-            const page = (req.query.page== undefined? 1: req.query.page)
+            const page = parseInt(req.query.page== undefined? 1: req.query.page)
             const pageSize = 5
             const start = (page-1)*pageSize
             const end = page*pageSize
 
             const countUser = await users.count()
-            const totalPage = (Math.floor(countUser/pageSize))+1
+            const totalPage = (countUser%pageSize !=0? (Math.floor(countUser/pageSize))+1:(Math.floor(countUser/pageSize)))
 
             const getAllUser=await users.findAll({
                 attributes:{exclude:['password','createdAt','updatedAt','role','location','user_image']},
@@ -114,6 +114,16 @@ class userController{
         try{
             const {name,email, password,role, location} = req.body
             const hashedPassword = hashPassword(password)
+
+            const checkEmail = await users.findOne({
+                where:{email: email}
+            })
+            if(checkEmail!=null){
+                throw{
+                    code: 401,
+                    message: "Email already used"
+                }
+            }
             
             const create = await users.create({
                 uuid: uuidv4(),
@@ -139,7 +149,7 @@ class userController{
                 repair_id: null,
                 activity_info: "add new user"
             })
-            res.status(200).json({
+            res.status(201).json({
                 message: "Add new User Successful",
                 user: {
                     id: create.id,

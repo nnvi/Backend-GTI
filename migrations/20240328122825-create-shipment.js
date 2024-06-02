@@ -49,13 +49,6 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull:true
       },
-      image: {
-        type: Sequelize.STRING,
-        allowNull:true,
-        validate:{
-          isUrl: true
-        }
-      },
       active_status: {
         type: Sequelize.BOOLEAN,
         allowNull:false

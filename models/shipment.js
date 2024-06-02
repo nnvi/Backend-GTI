@@ -58,13 +58,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    image: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate:{
-        isUrl: true
-      }
-    },
     active_status: {
       type:DataTypes.BOOLEAN,
       allowNull: false

@@ -5,13 +5,13 @@ class containerController{
     //get all container
     static async getContainer(req,res){
         try{
-            const page = (req.query.page== undefined? 1: req.query.page)
+            const page = parseInt(req.query.page== undefined? 1: req.query.page)
             const pageSize = 5
             const start = (page-1)*pageSize
             const end = page*pageSize
 
             const countCont = await container.count()
-            const totalPage = (Math.floor(countCont/pageSize))+1
+            const totalPage = (countCont%pageSize !=0? (Math.floor(countCont/pageSize))+1:(Math.floor(countCont/pageSize)))
 
             const getAllContainer=await container.findAll({
                 attributes:{exclude:['user_id','createdAt','updatedAt']}
@@ -34,6 +34,15 @@ class containerController{
     static async addContainer(req,res){
         try{
             const {number, age, location, iddle_days, type} = req.body
+            const checkCont = await container.findOne({
+                where:{number: number}
+            })
+            if(checkCont!=null){
+                throw{
+                    code: 401,
+                    message: "Container number recorded, Please enter another number"
+                }
+            }
             const create = await container.create({
                 uuid: uuidv4(),
                 number: number,
@@ -52,7 +61,7 @@ class containerController{
                 activity_info: "Added New Container"
             })
 
-            res.status(200).json({
+            res.status(201).json({
                 message: "add new container successful",
                 container: {
                     id: create.id,
