@@ -2,7 +2,11 @@ const { v4: uuidv4 } = require('uuid');
 const { generateToken } = require("../helpers/jwt")
 const {comparePassword, hashPassword}= require('../helpers/bcrypt')
 const {users,log_activity}= require('../models')
-const cloudinary = require('../middlewares/cloudinary')
+require('dotenv').config();
+const host = process.env.HOST;
+const port = process.env.PORT;
+const path = require('path');
+const fs = require('fs');
 
 class userController{
     //user login
@@ -56,16 +60,24 @@ class userController{
 
     //get current user
     static async currentUser (req,res){
-        try{
-            const getMe = await users.findByPk(req.UserData.id,{
-                attributes:{exclude:['password','createdAt','updatedAt']}
-            })
+        try {
+            const getMe = await users.findByPk(req.UserData.id, {
+              attributes: { exclude: ['password', 'createdAt', 'updatedAt'] },
+            });
+      
+            getMe.image = getMe.image
+              ? `${host}:${port}/${getMe.image.replace(/\\/g, '/')}`
+              : null;
+      
+            console.log(getMe);
+      
             res.status(200).json({
-                user : getMe
-            })
-        }catch(err){
-            res.status(err?.code ||500).json(err)
-        }
+              user: getMe,
+            });
+          } catch (err) {
+            res.status(err?.code || 500).json(err);
+          }
+      
     } 
 
     //get all user
@@ -110,7 +122,7 @@ class userController{
                 password: hashedPassword,
                 role:role,
                 location: location,
-                image: req.file.path
+                image: req.file?req.file.path:null
             },function(err,result){
                 if(err){
                     console.log(err);
@@ -155,7 +167,10 @@ class userController{
                     uuid: uuid
                 },
                 attributes:{exclude:['password','createdAt','updatedAt']}
-            })
+            });
+
+            getUserId.image = getUserId.image
+            ?`${host}:${port}/${getUserId.image.replace(/\\/g,'/')}`:null;
 
             res.status(200).json({user:getUserId})
         }catch(err){
@@ -165,50 +180,89 @@ class userController{
         }
     }
 
-    //delete user by id
-    static async deleteUser(req,res){
-        try{
-            const {uuid}= req.params
-            const deleteUser = await users.destroy({
-                where:{
-                    uuid: uuid
+    static async deleteUser(req, res){
+        try {
+          const { uuid } = req.params;
+          const getUser = await users.findOne({
+            where: {
+              uuid: uuid,
+            },
+            attributes: { only: ['image'] },
+          });
+    
+          if(getUser.image!= null){
+            const filename = getUser.image.replace(/^uploads[\\\/]/, '');
+            const filePath = path.join('uploads', filename);
+    
+            if (filename != null) {
+                fs.unlink(filePath, (err) => {
+                  if (err) {
+                    console.error(err);
+                    return;
                 }
-            })
-            console.log(deleteUser);
-            const delUserLog = await log_activity.create({
-                user_id: req.UserData.id,
-                shipment_id: null,
-                repair_id: null,
-                activity_info: `delete user data`
-            })
-            res.status(200).json({
-                message: "deleted user success"
-            })
-        }catch(err){
-            res.status(401).json({
-                message:err
-            })
-        }
-    }
+                });
+            }
+          }          
+    
+          const deleteUser = await users.destroy({
+            where: {
+              uuid: uuid,
+            },
+          });
+          console.log(deleteUser);
+          const delUserLog = await log_activity.create({
+            user_id: req.UserData.id,
+            shipment_id: null,
+            repair_id: null,
+            activity_info: "delete user data",
+          });
+          res.status(200).json({
+            message: 'deleted user success',
+          });
+        } catch (err) {
+          res.status(401).json({
+            message: err.message,
+          });
+        }
+      }
 
     static async EditUser(req,res){
         try{
             const {name,email, password,role, location} = req.body
             const {uuid} = req.params
-            const hashedPassword = hashPassword(password)
+            const hashedPassword = password?hashPassword(password) : null;
+            const getUser = await users.findOne({
+                where: {
+                  uuid: uuid,
+                },
+                attributes: { only: ['image', 'password'] },
+            });
+
+            if(getUser.image!= null){
+                const filename = getUser.image.replace(/^uploads[\\\/]/, '');
+                const filePath = path.join('uploads', filename);
+        
+                if (filename != null) {
+                    fs.unlink(filePath, (err) => {
+                      if (err) {
+                        console.error(err);
+                        return;
+                    }
+                    });
+                }
+            }
             const editUser = await users.update({
                 name:name,
                 email:email,
-                password:hashedPassword,
+                password:hashedPassword? hashedPassword:getUser.password,
                 role:role,
                 location:location,
-                image: req.file.path
+                image: req.file?req.file.path:getUser.image,
             },{
-                where:{
-                    uuid: uuid
-                },
+                where:{uuid: uuid},
                 returning: true
             })
+            
             const editUserLog = await log_activity.create({
                 user_id: req.UserData.id,
                 shipment_id: null,
