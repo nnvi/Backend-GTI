@@ -156,7 +156,7 @@ class ShipmentController{
             const {uuid}= req.params
             const getShipment = await shipment.findOne({
                 where:{uuid:uuid},
-                attributes:['number','id','active_status']
+                attributes:['number','id','active_status','container_id']
             })
             if(getShipment ==null || getShipment.active_status==false){
                 throw{
@@ -164,6 +164,13 @@ class ShipmentController{
                     message: (getShipment==null?`${uuid} not found`:`${getShipment.number} not found`)
                 }
             }
+            const updateContainer = await container.update({
+                status:"Ready"
+            },{
+                where:{
+                    id:getShipment.container_id
+                }
+            })
 
             const deleteShipment = await shipment.update({
                 active_status: false,
@@ -191,7 +198,7 @@ class ShipmentController{
 
     //edit data shipment by uuid
     static async editShipment(req,res){
-        try{
+        // try{
             const {number, status,POL, POD, ETD, ETA, stuffing_date, shipper, remark_description} = req.body
             const {uuid} = req.params
             let container_number = req.body.container_number
@@ -210,8 +217,14 @@ class ShipmentController{
                 attributes:['id'],
                 returning: true
             })
+            const cont_id =  await container.findOne({
+                where:{
+                    number: container_number
+                },
+                attributes:['id']
+            })
 
-            if(container_number != getShipment.container_id){
+            if(cont_id.id != getShipment.container_id){
                 const updateContStatus = await container.update({
                     status: "Ready"
                 },{
@@ -230,7 +243,6 @@ class ShipmentController{
                         message:`container ${container_number} status ${cont_id.status}, please choose another container`
                     }
                 }
-                container_number = cont_id.id
             }
 
             if(status=="Return"){
@@ -238,11 +250,15 @@ class ShipmentController{
                     location: POD,
                     iddle_days: 0,
                     status:"Ready"
+                },{
+                    where:{
+                        number:container_number
+                    }
                 })
             }
             const editShipment = await shipment.update({
                 number: number,
-                container_id: container_number,
+                container_id: cont_id.id,
                 return_empty: (status=="Return"? new Date():null),
                 status:status,
                 shipment_detail_id: updateShipmentDetails[1][0].id,
@@ -261,16 +277,19 @@ class ShipmentController{
                 status: "update Shipments successful",
                 Shipment: editShipment[1][0]
             })
-        }catch(err){
-            res.status(402).json({
-                message:err
-            })
-        }
+        // }catch(err){
+        //     res.status(402).json({
+        //         message:err
+        //     })
+        // }
     }
 
     static async getShipmentDashboard(req,res){
         try{
             const dashboardShipment = await shipment.findAll({
+                where:{
+                    active_status:true
+                },
                 attributes: ['id','number'],
                 include:{
                     model:users,

@@ -1,9 +1,9 @@
 const { v4: uuidv4 } = require('uuid');
-const {repair,container,users,log_activity}= require('../models')
-const cloudinary = require('../middlewares/cloudinary')
-const multer = require('multer');
+const {repair,container,log_activity}= require('../models')
+const path = require('path');
+const fs = require('fs');
+const { where } = require('sequelize');
 
-const upload = multer({ dest: 'uploads/' });
 class RepairController{
     //get all Repair
     static async getRepair(req,res){
@@ -17,9 +17,10 @@ class RepairController{
             const totalPage = (countRepair%pageSize !=0? (Math.floor(countRepair/pageSize))+1:(Math.floor(countRepair/pageSize)))
 
             const getAllRepair=await repair.findAll({
+                attributes:['id','uuid','remarks'],
                 include: [{
-                    model: users,
-                    attributes:{exclude:['password']}
+                    model: container,
+                    attributes:['number','type','location','age']
                 }, container]
             })
             const pageRepair = getAllRepair.slice(start,end)
@@ -40,23 +41,29 @@ class RepairController{
     static async addRepair(req,res){
         try{
             const {number, remarks} = req.body            
-            const cont_id =  await container.findAll({
+            const cont_id =  await container.findOne({
                 where:{
                     number: number
-                }
-            })                             
+                },
+                
+            })  
+            console.log(cont_id.status);
+            
+            if(cont_id.status == "Repair"){
+                return res.status(400).json({ Pesan: 'Kontainer sudah dalam perbaikan' });
+              };                        
             const create = await repair.create({
                 uuid: uuidv4(),
                 user_id: req.UserData.id,
-                container_id: cont_id[0].id,
+                container_id: cont_id.id,
                 remarks: remarks,
-                image: req.file.path,                
+                image: req.file?req.file.path:null,            
             })
             const updateCont =await container.update({
                 status:"Repair"
             },{
                 where:{
-                    id:cont_id[0].id
+                    id:cont_id.id
                 }
             })
             const addRepairLog = await log_activity.create({
@@ -66,6 +73,7 @@ class RepairController{
                 activity_info: "Added New Repairment"
             })
             res.status(201).json({
+                meesage:"add repair successfull",
                 repair: create
             })
         }catch(err){
@@ -79,17 +87,15 @@ class RepairController{
     //get Repair by id
     static async getRepairbyUuid(req,res){
         try{
-            const {repair_uuid} = req.params
+            const {uuid} = req.params
             const getrepairId = await repair.findOne({
                 where:{
-                    uuid: repair_uuid
+                    uuid: uuid
                 },
-                attributes:{
-                    exclude:['createdAt','updatedAt']
-                },
+                attributes:['id','uuid','remarks'],
                 include: [{
                     model: container,
-                    attributes:['number','age','location']
+                    attributes:['number','age','location','type']
                 }]
             })
             res.status(200).json({repair:getrepairId})
@@ -102,63 +108,188 @@ class RepairController{
 
     //delete Repair by id
     static async deleteRepair(req,res){
-        try{
-            const {id}= req.params
-            const deleteRepair = await repair.destroy({where:{id}})
+        // try {
+            const { uuid } = req.params;
+            const getRepair = await repair.findOne({
+              where: {
+                uuid: uuid,
+              },
+              attributes: { only: ['image','container_id'] },
+            });
+            
+            if(getRepair.image != null){
+                const filename = getRepair.image.replace(/^uploads[\\\/]/, '');
+                const filePath = path.join('uploads', filename);
+      
+                if (filename != null) {
+                    fs.unlink(filePath, (err) => {
+                        if (err) {
+                        console.error(err);
+                          return;
+                    }
+                    });
+                }
+            }
+            const updateContainer = await container.update({
+                status:"Ready"
+            },{
+                where:{
+                    id:getRepair.container_id
+                },
+                returning:true
+            })
+            console.log(updateContainer[1][0].status);
+
+            const deleteRepair = await repair.destroy({
+                where: {
+                    uuid: uuid,
+                },
+            });
+            
             const addRepairLog = await log_activity.create({
                 user_id: req.UserData.id,
                 shipment_id: null,
-                repair_id: null,
+                repair_id: deleteRepair.id,
                 activity_info: "Deleted a Repairment"
             })
             res.status(200).json({
-                message: "deleted Repair success"
-            })
-
-        }catch(err){
-            res.status(401).json({
-                message:err
-            })
-        }
+                message: 'delete Repair success',
+            });
+    //         } catch (err) {
+    //             res.status(401).json({
+    //             message: err.message,
+    //            });
+    //         }
     }
 
     static async EditRepair(req,res){
         try{
-            const {number, remarks} = req.body     
-            const {id} = req.params   
-            const cont_id =  await container.findAll({
+            const {number, remarks} = req.body
+            const {uuid} = req.params
+            const getRepair = await repair.findOne({
+                where: {
+                  uuid: uuid,
+                },
+                attributes: { only: ['image','container_id'] },
+            });
+            if(getRepair.image!= null){
+                const filename = getRepair.image.replace(/^uploads[\\\/]/, '');
+                const filePath = path.join('uploads', filename);        
+                if (filename != null) {
+                    fs.unlink(filePath, (err) => {
+                      if (err) {
+                        console.error(err);
+                        return;
+                    }
+                    });
+                }
+            }
+            const cont_id =  await container.findOne({
                 where:{
                     number: number
+                },
+                attributes:['id','number']
+            })
+            
+            if(cont_id.id != getRepair.container_id){
+                const updateContStatus = await container.update({
+                    status: "Ready"
+                },{
+                    where:{
+                        id: getRepair.container_id
+                    }
+                })
+                const cont_id =  await container.findOne({
+                    where:{
+                        number: number
+                    }
+                })
+                if(cont_id.status!= "Ready"){
+                    throw{
+                        code:401,
+                        message:`container ${number} status ${cont_id.status}, please choose another container`
+                    }
                 }
-            })
-            const editRepair = await repair.update({
-                user_id: req.UserData.id,
-                container_id: cont_id[0].id,
-                remarks: remarks,
-                image:req.file.path,
-            },{
-                where:{id},
-                returning: true
-            })
+            }
             const updateCont =await container.update({
                 status:"Repair"
             },{
                 where:{
-                    id:cont_id[0].id
+                    number:number
                 }
             })
-            const addRepairLog = await log_activity.create({
+
+            const editRepair = await repair.update({
+                container_id: cont_id.id,
+                remarks: remarks,
+                image: req.file?req.file.path:getRepair.image,
+            },{
+                where:{uuid: uuid},
+                returning: true
+            })
+            const editRepairLog = await log_activity.create({
                 user_id: req.UserData.id,
                 shipment_id: null,
-                repair_id: null,
-                activity_info: "Updated a Repairment"
+                repair_id: getRepair.id,
+                activity_info: "edit repair data"
             })
             res.status(200).json({
-                status: "update Repairs successful",
-                Repair: editRepair[1][0]
+                status: "update Repair successful",
+                repair:{
+                    number: cont_id.number,
+                    remarks: editRepair[1][0].remarks,
+                    image: editRepair[1][0].image
+                }
             })
         }catch(err){
             res.status(402).json({
+                message:err.message
+            })
+        }
+    }
+
+    static async FinishRepair(req,res){
+        try{
+            const {uuid} = req.params
+            const getRepair = await repair.findOne({
+                where: {
+                uuid: uuid,
+                },
+                attributes: ['container_id'],
+            });
+            const updateContainer = await container.update({
+                status: "Ready"
+            },{
+                where:{
+                    id: getRepair.container_id
+                },
+                returning:true
+            })
+            res.status(200).json({
+                message: `repair container ${updateContainer[1][0].number} finished`
+            })
+        }catch(err){
+            res.status(501).json({
+                message:err.message
+            })
+        }
+    }
+
+    static async historyRepair(req,res){
+        try{
+            const {uuid} = req.params
+            const getRepair = await repair.findOne({
+                where:{uuid:uuid},
+                attributes:['container_id']
+            })
+            const getHistoryRepair = await repair.findAll({
+                where:{
+                    container_id: getRepair.container_id
+                }
+            })
+            res.status(200).json(getHistoryRepair)
+        }catch(err){
+            res.status(501).json({
                 message:err.message
             })
         }
