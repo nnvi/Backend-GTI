@@ -17,7 +17,7 @@ class RepairController{
             const totalPage = (countRepair%pageSize !=0? (Math.floor(countRepair/pageSize))+1:(Math.floor(countRepair/pageSize)))
 
             const getAllRepair=await repair.findAll({
-                attributes:['id','uuid','remarks'],
+                attributes:['id','uuid','remarks','createdAt'],
                 include: [{
                     model: container,
                     attributes:['number','type','location','age']
@@ -92,7 +92,7 @@ class RepairController{
                 where:{
                     uuid: uuid
                 },
-                attributes:['id','uuid','remarks'],
+                attributes:['id','uuid','remarks','createdAt','image'],
                 include: [{
                     model: container,
                     attributes:['number','age','location','type']

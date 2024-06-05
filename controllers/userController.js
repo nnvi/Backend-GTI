@@ -94,7 +94,7 @@ class userController{
             const getAllUser=await users.findAll({
                 attributes:{exclude:['password','createdAt','updatedAt','role','location','user_image']},
             })
-
+            getAllUser.sort((a, b) => a.id - b.id);
             const paginationUser = getAllUser.slice(start,end)
 
             res.status(200).json({

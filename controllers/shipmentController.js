@@ -22,7 +22,7 @@ class ShipmentController{
                 where:{
                     active_status:true
                 },
-                attributes:['id','uuid','status'],
+                attributes:['id','uuid','status','createdAt'],
                 include: [{
                     model: shipment_detail,
                     attributes:['shipper','POL','POD','ETD']
