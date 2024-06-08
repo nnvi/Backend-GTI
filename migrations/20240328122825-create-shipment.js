@@ -26,10 +26,6 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false
       },
-      container_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false
-      },
       return_empty: {
         type: Sequelize.DATE,
         allowNull: true

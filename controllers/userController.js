@@ -69,8 +69,6 @@ class userController{
               ? `${host}:${port}/${getMe.image.replace(/\\/g, '/')}`
               : null;
       
-            console.log(getMe);
-      
             res.status(200).json({
               user: getMe,
             });
@@ -248,7 +246,7 @@ class userController{
                 attributes: { only: ['image', 'password'] },
             });
 
-            if(getUser.image!= null){
+            if(req.file!= undefined){
                 const filename = getUser.image.replace(/^uploads[\\\/]/, '');
                 const filePath = path.join('uploads', filename);
         

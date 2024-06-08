@@ -1,6 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
-const {container,users,log_activity,shipment}= require('../models');
+const {container,users,log_activity,shipment,shipment_containers,shipment_detail, Sequelize}= require('../models');
 const { where } = require('sequelize');
+const { getShipment } = require('./shipmentController');
 
 class containerController{
     //get all container
@@ -11,12 +12,24 @@ class containerController{
             const start = (page-1)*pageSize
             const end = page*pageSize
 
-            const countCont = await container.count()
+            const countCont = await container.count({
+                where:{
+                    status: {
+                        [Sequelize.Op.ne]: 'Repair' 
+                    }
+                }
+            })
             const totalPage = (countCont%pageSize !=0? (Math.floor(countCont/pageSize))+1:(Math.floor(countCont/pageSize)))
 
             const getAllContainer=await container.findAll({
-                attributes:{exclude:['user_id','createdAt','updatedAt']}
+                attributes:{exclude:['user_id','createdAt','updatedAt']},
+                where: {
+                    status: {
+                        [Sequelize.Op.ne]: 'Repair' 
+                    }
+                }
             })
+            getAllContainer.sort((a, b) => a.id - b.id);
             const pageContainer = getAllContainer.slice(start,end)
             
             res.status(200).json({
@@ -92,17 +105,57 @@ class containerController{
                     uuid: uuid
                 },
                 attributes:{
-                    exclude:['createdAt','updatedAt']
-                },
-                include: [{
-                    model: users,
-                    attributes:['name']
-                }]
+                    exclude:['createdAt','updatedAt','user_id']
+                }
             })
-            res.status(200).json({container:getcontainerId})
+            var getShipmentData = null
+            if(getcontainerId.status=="In-Use"){
+                const getshipment = await shipment_containers.findAll({
+                    where:{
+                        container_id: getcontainerId.id
+                    },
+                    attributes:['id'],
+                    include:{
+                        model: shipment,
+                        attributes:['number','status'],
+                        where: {
+                            status: {
+                                [Sequelize.Op.ne]: 'Return' 
+                            },
+                            active_status:{
+                                [Sequelize.Op.ne]: false 
+                            }
+                        },
+                        include:[{
+                            model:shipment_detail,
+                            attributes:['shipper']
+                        }]
+                    }
+                })
+                getShipmentData = getshipment.map(data=>({
+                    shipment_number: data.shipment.number,
+                    shipper:data.shipment.shipment_detail.shipper
+                }))
+            }
+
+            const setResponse = {
+                id: getcontainerId.id,
+                uuid: getcontainerId.uuid,
+                number: getcontainerId.number,
+                age: getcontainerId.age,
+                location: getcontainerId.location,
+                iddle_days: getcontainerId.iddle_days,
+                type: getcontainerId.type,
+                status: getcontainerId.status,
+                shipment_number: (!getShipmentData?null: getShipmentData[0].shipment_number),
+                shipper: (!getShipmentData?null: getShipmentData[0].shipper)
+                }
+            res.status(200).json({
+                container:setResponse
+            })
         }catch(err){
             res.status(501).json({
-                message:err
+                message:err.message
             })
         }
     }
@@ -222,7 +275,9 @@ class containerController{
             res.status(200).json({
                 message: "Statistik Status Container",
                 data: {
-                    ReadyCont,InUseCont,RepairCont
+                    Ready:ReadyCont,
+                    InUse:InUseCont,
+                    Repair:RepairCont
                 }
             })
         }catch(err){
@@ -239,21 +294,31 @@ class containerController{
                 where: {uuid: uuid},
                 attributes:['id']
             })
-            const getHistory = await shipment.findAll({
+            const getHistory = await shipment_containers.findAll({
                 where: {container_id: cont_id.id},
-                attributes:['number'],
+                attributes:['id'],
                 include:{
-                    model: users,
-                    attributes:['name']
+                    model: shipment,
+                    attributes:['number'],
+                    include:[{
+                        model:shipment_detail,
+                        attributes:['shipper']
+                    }]
                 }
             })
+
+            const responseHistory =getHistory.map(history=>({
+                id:history.id,
+                shipment_number: history.shipment.number,
+                shipper:history.shipment.shipment_detail.shipper
+            }))
             res.status(200).json({
                 message:`Daftar Shipment container ${uuid}`,
-                history: getHistory
+                history: responseHistory
             })
         }catch(err){
             res.status(500).json({
-                message: err
+                message: err.message
             })
         }
     }

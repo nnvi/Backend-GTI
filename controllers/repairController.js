@@ -3,27 +3,51 @@ const {repair,container,log_activity}= require('../models')
 const path = require('path');
 const fs = require('fs');
 const { where } = require('sequelize');
+const { log } = require('console');
 
 class RepairController{
     //get all Repair
     static async getRepair(req,res){
         try{
             const page = parseInt(req.query.page== undefined? 1: req.query.page)
+            const search = req.query.search
             const pageSize = 5
             const start = (page-1)*pageSize
             const end = page*pageSize
 
             const countRepair = await repair.count()
             const totalPage = (countRepair%pageSize !=0? (Math.floor(countRepair/pageSize))+1:(Math.floor(countRepair/pageSize)))
-
+            var getContainerId = null
+            console.log(search);
+            (search!=undefined?
+                getContainerId = await container.findOne({
+                    where:{number:search},
+                    attributes:['id']
+                }):{}
+            )
             const getAllRepair=await repair.findAll({
+                where:
+                    search? {container_id: getContainerId.id}:{}
+                ,
                 attributes:['id','uuid','remarks','createdAt'],
                 include: [{
                     model: container,
                     attributes:['number','type','location','age']
-                }, container]
+                }, container],
             })
-            const pageRepair = getAllRepair.slice(start,end)
+            getAllRepair.sort((a, b) => a.createdAt - b.createdAt);
+
+            const setresponse = getAllRepair.map(repair =>({
+                id: repair.id,
+                uuid: repair.uuid,
+                remarks: repair.remarks,
+                createdAt: repair.createdAt,
+                container_number: repair.container.number,
+                container_type: repair.container.type,
+                location: repair.container.location,
+                age: repair.container.age
+            }))
+            const pageRepair = setresponse.slice(start,end)
 
             res.status(200).json({
                 page: page,
@@ -98,7 +122,18 @@ class RepairController{
                     attributes:['number','age','location','type']
                 }]
             })
-            res.status(200).json({repair:getrepairId})
+            const setresponse = {
+                id: getrepairId.id,
+                uuid: getrepairId.uuid,
+                remarks: getrepairId.remarks,
+                image: getrepairId.image,
+                createdAt: getrepairId.createdAt,
+                container_number: getrepairId.container.number,
+                container_type: getrepairId.container.type,
+                location: getrepairId.container.location,
+                age: getrepairId.container.age
+            }
+            res.status(200).json({repair:setresponse})
         }catch(err){
             res.status(501).json({
                 message:err.message
@@ -172,7 +207,7 @@ class RepairController{
                 },
                 attributes: { only: ['image','container_id'] },
             });
-            if(getRepair.image!= null){
+            if(req.file!= undefined && getRepair.image!=null){
                 const filename = getRepair.image.replace(/^uploads[\\\/]/, '');
                 const filePath = path.join('uploads', filename);        
                 if (filename != null) {
@@ -278,16 +313,29 @@ class RepairController{
     static async historyRepair(req,res){
         try{
             const {uuid} = req.params
-            const getRepair = await repair.findOne({
+            const getRepair = await container.findOne({
                 where:{uuid:uuid},
-                attributes:['container_id']
+                attributes:['id','number']
             })
             const getHistoryRepair = await repair.findAll({
                 where:{
-                    container_id: getRepair.container_id
-                }
+                    container_id: getRepair.id
+                },
+                attributes:['id','remarks'],
+                include:[{
+                    model:container,
+                    attributes: ['number']
+                }]
             })
-            res.status(200).json(getHistoryRepair)
+            const setresponse= getHistoryRepair.map(history=>({
+                id:history.id,
+                remarks: history.remarks,
+                container_number: history.container.number
+            }))
+            res.status(200).json({
+                status:`Get History repair from container ${getRepair.number}`,
+                history:setresponse
+            })
         }catch(err){
             res.status(501).json({
                 message:err.message

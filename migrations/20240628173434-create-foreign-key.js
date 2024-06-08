@@ -29,12 +29,24 @@ module.exports = {
       onUpdate: "cascade"
     })
 
-    await queryInterface.addConstraint("shipments", {
+    await queryInterface.addConstraint("shipment_containers", {
       fields: ["container_id"],
       type: "foreign key",
-      name: "contId_fk_shipment",
+      name: "contId_fk_shipment_containers",
       references: {
         table: "containers",
+        field: "id"
+      },
+      onDelete: "cascade",
+      onUpdate: "cascade"
+    })
+
+    await queryInterface.addConstraint("shipment_containers", {
+      fields: ["shipment_id"],
+      type: "foreign key",
+      name: "shipId_fk_shipment_containers",
+      references: {
+        table: "shipments",
         field: "id"
       },
       onDelete: "cascade",

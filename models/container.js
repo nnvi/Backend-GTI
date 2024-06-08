@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       container.hasOne(models.repair,{foreignKey:"container_id"}),
-      container.hasMany(models.shipment,{foreignKey:"container_id"}),
+      container.hasMany(models.shipment_containers,{foreignKey:"container_id"}),
       container.belongsTo(models.users,{foreignKey:"user_id"})
     }
   }

@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
       shipment.hasMany(models.log_activity,{foreignKey:"shipment_id"}),
       shipment.belongsTo(models.users,{foreignKey:"user_id"}),
       shipment.belongsTo(models.shipment_detail,{foreignKey:"shipment_detail_id"}),
-      shipment.belongsTo(models.container,{foreignKey:"container_id"})
+      shipment.hasMany(models.shipment_containers,{foreignKey:"shipment_id"})
     }
   }
   shipment.init({
@@ -34,10 +34,6 @@ module.exports = (sequelize, DataTypes) => {
     user_id:{
       type: DataTypes.INTEGER,
       allowNull: false
-    },
-    container_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
     },
     return_empty: {
       type: DataTypes.DATE,
