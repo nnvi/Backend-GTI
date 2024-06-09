@@ -17,14 +17,12 @@ class LogActivityController{
             const totalPage = (countLog % pageSize != 0? (Math.floor(countLog/pageSize))+1: countLog/pageSize)
             let whereClause = {};
             if (checkDate.test(search)) {
-                // If search is a valid date, filter by date
                 whereClause = {
                     createdAt: {
                         [Op.between]: [new Date(search), new Date(new Date(search).getTime() + 86400000)] // Assuming search represents a single day
                     }
                 };
             } else {
-                // If search is not a valid date, assume it's a user name and filter by user name
                 whereClause = {
                     '$user.name$': {
                         [Op.like]: `%${search}%`

@@ -2,8 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const {repair,container,log_activity, sequelize, Sequelize}= require('../models')
 const path = require('path');
 const fs = require('fs');
-const { where } = require('sequelize');
-const { log } = require('console');
+const ExcelJS = require('exceljs');
 
 class RepairController{
     //get all Repair
@@ -14,23 +13,15 @@ class RepairController{
             const pageSize = 5
             const start = (page-1)*pageSize
             const end = page*pageSize
+            const exportData = req.query.export || false;
 
             const countRepair = await repair.count()
             const totalPage = (countRepair%pageSize !=0? (Math.floor(countRepair/pageSize))+1:(Math.floor(countRepair/pageSize)))
-            // var getContainerId = null
-            // console.log(search);
-            // (search!=undefined?
-            //     getContainerId = await container.findOne({
-            //         where:{number:search},
-            //         attributes:['id']
-            //     }):{}
-            // )
+            
             const getAllRepair=await repair.findAll({
                 where:{
                     '$container.number$':{[Sequelize.Op.like]:`%${search}%`}
-                }
-                    // search? {container_id: getContainerId.id}:{}
-                ,
+                },
                 attributes:['id','uuid','remarks','createdAt'],
                 include: [{
                     model: container,
@@ -46,20 +37,54 @@ class RepairController{
                 createdAt: repair.createdAt,
                 container_number: repair.container.number,
                 container_type: repair.container.type,
-                location: repair.container.location,
-                age: repair.container.age
+                container_location: repair.container.location,
+                container_age: repair.container.age
             }))
-            const pageRepair = setresponse.slice(start,end)
 
-            res.status(200).json({
-                page: page,
-                totalRepair: countRepair,
-                totalPage: totalPage,
-                repairs: pageRepair
-            })
+            if (exportData) {
+                const workbook = new ExcelJS.Workbook();
+                const worksheet = workbook.addWorksheet('repairs');
+    
+                worksheet.columns = [
+                    { header: 'ID', key: 'id', width: 10 },
+                    { header: 'UUID', key: 'uuid', width: 36 },
+                    { header: 'Remarks', key: 'remarks', width: 36 },
+                    { header: 'Container_Number', key: 'container_number', width: 20 },
+                    { header: 'Container_Type', key: 'container_type', width: 15 },
+                    { header: 'Container_Location', key: 'container_location', width: 15 },
+                    { header: 'Container_Age', key: 'container_age', width: 10 },
+                    { header: 'CreatedAt', key: 'createdAt', width: 10 }
+                ];
+
+                getAllRepair.map((value,idx)=>{
+                    worksheet.addRow({
+                        id:value.id,
+                        uuid: value.uuid,
+                        remarks: value.remarks,
+                        container_number: value.container.number,
+                        container_type: value.container.type,
+                        container_location: value.container.location,
+                        container_age: value.container.age,
+                        createdAt: value.createdAt
+                    })
+                })
+                res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                res.setHeader('Content-Disposition', 'attachment; filename=repairs.xlsx');
+                await workbook.xlsx.write(res);
+                res.end();
+            } else {
+                const pageRepair = setresponse.slice(start,end)
+
+                res.status(200).json({
+                    page: page,
+                    totalRepair: countRepair,
+                    totalPage: totalPage,
+                    repairs: pageRepair
+                })
+            }
         }
         catch(err){
-            res.status(500).json({message:err})
+            res.status(500).json({message:err.message})
         }
     }
   
@@ -132,8 +157,8 @@ class RepairController{
                 createdAt: getrepairId.createdAt,
                 container_number: getrepairId.container.number,
                 container_type: getrepairId.container.type,
-                location: getrepairId.container.location,
-                age: getrepairId.container.age
+                container_location: getrepairId.container.location,
+                container_age: getrepairId.container.age
             }
             res.status(200).json({repair:setresponse})
         }catch(err){
@@ -145,7 +170,7 @@ class RepairController{
 
     //delete Repair by id
     static async deleteRepair(req,res){
-        // try {
+        try {
             const { uuid } = req.params;
             const getRepair = await repair.findOne({
               where: {
@@ -192,11 +217,11 @@ class RepairController{
             res.status(200).json({
                 message: 'delete Repair success',
             });
-    //         } catch (err) {
-    //             res.status(401).json({
-    //             message: err.message,
-    //            });
-    //         }
+            } catch (err) {
+                res.status(401).json({
+                message: err.message,
+               });
+            }
     }
 
     static async EditRepair(req,res){
@@ -323,16 +348,17 @@ class RepairController{
                 where:{
                     container_id: getRepair.id
                 },
-                attributes:['id','remarks'],
+                attributes:['id','remarks','createdAt'],
                 include:[{
                     model:container,
                     attributes: ['number']
                 }]
             })
             const setresponse= getHistoryRepair.map(history=>({
-                id:history.id,
+                id: history.id,
                 remarks: history.remarks,
-                container_number: history.container.number
+                container_number: history.container.number,
+                createdAt: history.createdAt
             }))
             res.status(200).json({
                 status:`Get History repair from container ${getRepair.number}`,

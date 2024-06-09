@@ -1,7 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const {container,users,log_activity,shipment,shipment_containers,shipment_detail, Sequelize}= require('../models');
-const { where } = require('sequelize');
-const { getShipment } = require('./shipmentController');
+const ExcelJS = require('exceljs');
 
 class containerController{
     //get all container
@@ -14,6 +13,7 @@ class containerController{
             const search = req.query.search || ''
             const filterStatus = req.query.status || ''
             const filterlocation = req.query.location || ''
+            const exportData = req.query.export || false;
 
             const whereClause = {
                 status: {
@@ -34,14 +34,46 @@ class containerController{
                 where: whereClause
             })
             getAllContainer.sort((a, b) => a.id - b.id);
-            const pageContainer = getAllContainer.slice(start,end)
-            
-            res.status(200).json({
-                page: page,
-                totalContainer: countCont,
-                totalPage: totalPage,
-                containers: pageContainer
-            })
+
+            if (exportData) {
+                const workbook = new ExcelJS.Workbook();
+                const worksheet = workbook.addWorksheet('containers');
+    
+                worksheet.columns = [
+                    { header: 'ID', key: 'id', width: 10 },
+                    { header: 'UUID', key: 'uuid', width: 36 },
+                    { header: 'Number', key: 'number', width: 20 },
+                    { header: 'Type', key: 'type', width: 15 },
+                    { header: 'Location', key: 'location', width: 15 },
+                    { header: 'Age', key: 'age', width: 10 },
+                    { header: 'Status', key: 'status', width: 15 }
+                ];
+
+                getAllContainer.map((value,idx)=>{
+                    worksheet.addRow({
+                        id:value.id,
+                        uuid: value.uuid,
+                        number: value.number,
+                        age: value.age,
+                        location: value.location,
+                        iddle_days: value.iddle_days,
+                        type: value.type,
+                        status: value.status,
+                    })
+                })
+                res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                res.setHeader('Content-Disposition', 'attachment; filename=containers.xlsx');
+                await workbook.xlsx.write(res);
+                res.end();
+            } else {
+                const pageContainer = getAllContainer.slice(start,end)
+                res.status(200).json({
+                    page: page,
+                    totalContainer: countCont,
+                    totalPage: totalPage,
+                    containers: pageContainer
+                })
+            }
         }
         catch(err){
             res.status(500).json({message:err.message})
@@ -306,7 +338,7 @@ class containerController{
                     attributes:['number'],
                     include:[{
                         model:shipment_detail,
-                        attributes:['shipper']
+                        attributes:['shipper','ETD']
                     }]
                 }
             })
@@ -314,7 +346,8 @@ class containerController{
             const responseHistory =getHistory.map(history=>({
                 id:history.id,
                 shipment_number: history.shipment.number,
-                shipper:history.shipment.shipment_detail.shipper
+                shipper:history.shipment.shipment_detail.shipper,
+                ETD:history.shipment.shipment_detail.ETD
             }))
             res.status(200).json({
                 message:`Daftar Shipment container ${uuid}`,

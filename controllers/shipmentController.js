@@ -1,6 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const {shipment,container,shipment_detail,users, log_activity,shipment_containers}= require('../models');
 const { Op } = require('sequelize');
+const ExcelJS = require('exceljs');
 
 class ShipmentController{
     //get all Shipment
@@ -12,7 +13,8 @@ class ShipmentController{
             const end = page*pageSize
             const search = req.query.search || '';
             const datefilter = req.query.date ?new Date(req.query.date) : null;
-            console.log(datefilter);
+            const exportData = req.query.export || false;
+
             const whereClause = {
                 active_status: true,
                 [Op.or]: [
@@ -35,12 +37,14 @@ class ShipmentController{
 
             const getAllShipment=await shipment.findAll({
                 where:whereClause,
-                attributes:['id','uuid','status','number','createdAt'],
+                attributes:['id','uuid','status','number','createdAt','remark_description'],
                 include: [{
                     model: shipment_detail,
-                    attributes:['shipper','POL','POD','ETD']
+                    attributes:['shipper','POL','POD','ETD','ETA']
                 }]
             })
+            getAllShipment.sort((a, b) => a.createdAt - b.createdAt);
+            
             const setresponse = getAllShipment.map(shipment=>({
                 id: shipment.id,
                 uuid: shipment.uuid,
@@ -50,16 +54,58 @@ class ShipmentController{
                 shipper: shipment.shipment_detail.shipper,
                 POL: shipment.shipment_detail.POL,
                 POD: shipment.shipment_detail.POD,
-                ETD: shipment.shipment_detail.ETD
+                ETD: shipment.shipment_detail.ETD,
+                ETD: shipment.shipment_detail.ETA,
+                remark_description: shipment.remark_description
             }))
-            const pageShipment = setresponse.slice(start,end)
 
-            res.status(200).json({
-                page: page,
-                totalShipment: countShipment,
-                totalPage: totalPage,
-                shipment: pageShipment
-            })
+            if (exportData) {
+                const workbook = new ExcelJS.Workbook();
+                const worksheet = workbook.addWorksheet('Shipments');
+    
+                worksheet.columns = [
+                    { header: 'ID', key: 'id', width: 10 },
+                    { header: 'UUID', key: 'uuid', width: 36 },
+                    { header: 'Number', key: 'number', width: 20 },
+                    { header: 'Shipper', key: 'shipper', width: 15 },
+                    { header: 'POL', key: 'POL', width: 15 },
+                    { header: 'POD', key: 'POD', width: 15 },
+                    { header: 'ETD', key: 'ETD', width: 15 },
+                    { header: 'ETA', key: 'ETA', width: 15 },
+                    { header: 'Status', key: 'status', width: 15 },
+                    { header: 'Remark', key: 'remark_description', width: 15 },
+                    { header: 'CreatedAt', key: 'createdAt', width: 10 }
+                ];
+
+                getAllShipment.map((shipment,idx)=>{
+                    worksheet.addRow({
+                        id: shipment.id,
+                        uuid: shipment.uuid,
+                        number: shipment.number,
+                        status: shipment.status,
+                        createdAt: shipment.createdAt,
+                        shipper: shipment.shipment_detail.shipper,
+                        POL: shipment.shipment_detail.POL,
+                        POD: shipment.shipment_detail.POD,
+                        ETD: shipment.shipment_detail.ETD,
+                        ETA: shipment.shipment_detail.ETA,
+                        remark_description: shipment.remark_description
+                    })
+                })
+                res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                res.setHeader('Content-Disposition', 'attachment; filename=shipments.xlsx');
+                await workbook.xlsx.write(res);
+                res.end();
+            } else {
+                const pageShipment = setresponse.slice(start,end)
+
+                res.status(200).json({
+                    page: page,
+                    totalShipment: countShipment,
+                    totalPage: totalPage,
+                    shipment: pageShipment
+                })
+            }
         }
         catch(err){
             res.status(500).json({message:err.message})
@@ -198,10 +244,11 @@ class ShipmentController{
                     ETA: shipmentDetails.ETA,
                     shipper: shipmentDetails.shipper,
                     stuffing_date: shipmentDetails.stuffing_date
-                }})
+                }
+            })
         }catch(err){
             res.status(501).json({
-                message:err
+                message:err.message
             })
         }
     }
