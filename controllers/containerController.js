@@ -11,23 +11,27 @@ class containerController{
             const pageSize = 5
             const start = (page-1)*pageSize
             const end = page*pageSize
+            const search = req.query.search || ''
+            const filterStatus = req.query.status || ''
+            const filterlocation = req.query.location || ''
+
+            const whereClause = {
+                status: {
+                    [Sequelize.Op.ne]: 'Repair' 
+                },
+                ...(search && { number: { [Sequelize.Op.like]: `%${search}%` } }),
+                ...(filterStatus && { status: { [Sequelize.Op.like]: `%${filterStatus}%` } }),
+                ...(filterlocation && { location: { [Sequelize.Op.like]: `%${filterlocation}%` } })
+            };
 
             const countCont = await container.count({
-                where:{
-                    status: {
-                        [Sequelize.Op.ne]: 'Repair' 
-                    }
-                }
+                where:whereClause
             })
             const totalPage = (countCont%pageSize !=0? (Math.floor(countCont/pageSize))+1:(Math.floor(countCont/pageSize)))
 
             const getAllContainer=await container.findAll({
                 attributes:{exclude:['user_id','createdAt','updatedAt']},
-                where: {
-                    status: {
-                        [Sequelize.Op.ne]: 'Repair' 
-                    }
-                }
+                where: whereClause
             })
             getAllContainer.sort((a, b) => a.id - b.id);
             const pageContainer = getAllContainer.slice(start,end)
@@ -40,7 +44,7 @@ class containerController{
             })
         }
         catch(err){
-            res.status(500).json({message:err})
+            res.status(500).json({message:err.message})
         }
     }
 

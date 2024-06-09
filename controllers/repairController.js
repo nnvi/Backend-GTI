@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-const {repair,container,log_activity}= require('../models')
+const {repair,container,log_activity, sequelize, Sequelize}= require('../models')
 const path = require('path');
 const fs = require('fs');
 const { where } = require('sequelize');
@@ -10,24 +10,26 @@ class RepairController{
     static async getRepair(req,res){
         try{
             const page = parseInt(req.query.page== undefined? 1: req.query.page)
-            const search = req.query.search
+            const search = req.query.search || ''
             const pageSize = 5
             const start = (page-1)*pageSize
             const end = page*pageSize
 
             const countRepair = await repair.count()
             const totalPage = (countRepair%pageSize !=0? (Math.floor(countRepair/pageSize))+1:(Math.floor(countRepair/pageSize)))
-            var getContainerId = null
-            console.log(search);
-            (search!=undefined?
-                getContainerId = await container.findOne({
-                    where:{number:search},
-                    attributes:['id']
-                }):{}
-            )
+            // var getContainerId = null
+            // console.log(search);
+            // (search!=undefined?
+            //     getContainerId = await container.findOne({
+            //         where:{number:search},
+            //         attributes:['id']
+            //     }):{}
+            // )
             const getAllRepair=await repair.findAll({
-                where:
-                    search? {container_id: getContainerId.id}:{}
+                where:{
+                    '$container.number$':{[Sequelize.Op.like]:`%${search}%`}
+                }
+                    // search? {container_id: getContainerId.id}:{}
                 ,
                 attributes:['id','uuid','remarks','createdAt'],
                 include: [{

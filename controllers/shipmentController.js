@@ -1,7 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const {shipment,container,shipment_detail,users, log_activity,shipment_containers}= require('../models');
-const { getContainer } = require('./containerController');
-const { where } = require('sequelize');
+const { Op } = require('sequelize');
 
 class ShipmentController{
     //get all Shipment
@@ -11,19 +10,31 @@ class ShipmentController{
             const pageSize = 5
             const start = (page-1)*pageSize
             const end = page*pageSize
-
+            const search = req.query.search || '';
+            const datefilter = req.query.date ?new Date(req.query.date) : null;
+            console.log(datefilter);
+            const whereClause = {
+                active_status: true,
+                [Op.or]: [
+                    { number: { [Op.like]: `%${search}%` } },
+                    { '$shipment_detail.shipper$': { [Op.like]: `%${search}%` } }
+                ],
+                ...(datefilter && { createdAt: {
+                    [Op.gte]: new Date(datefilter.setHours(0, 0, 0, 0)),
+                    [Op.lt]: new Date(datefilter.setHours(23, 59, 59, 999))
+                } })
+            };
 
             const countShipment = await shipment.count({
-                where:{
-                    active_status: true
-                }
+                where:whereClause,
+                include: [{
+                    model: shipment_detail
+                }]
             })
             const totalPage = (countShipment%pageSize !=0? (Math.floor(countShipment/pageSize))+1:(Math.floor(countShipment/pageSize)))
 
             const getAllShipment=await shipment.findAll({
-                where:{
-                    active_status:true
-                },
+                where:whereClause,
                 attributes:['id','uuid','status','number','createdAt'],
                 include: [{
                     model: shipment_detail,
@@ -51,7 +62,7 @@ class ShipmentController{
             })
         }
         catch(err){
-            res.status(500).json({message:err})
+            res.status(500).json({message:err.message})
         }
     }
     
