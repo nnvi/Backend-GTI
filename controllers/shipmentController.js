@@ -12,8 +12,14 @@ class ShipmentController{
             const start = (page-1)*pageSize
             const end = page*pageSize
             const search = req.query.search || '';
-            const datefilter = req.query.date ?new Date(req.query.date) : null;
+            const startDate = req.query.startDate ? new Date(req.query.startDate) : null;
+            const endDate = req.query.endDate ? new Date(req.query.endDate) : null;
             const exportData = req.query.export || false;
+
+            const getUser = await users.findOne({
+                where:{id:req.UserData.id},
+                attributes:['location']
+            })
 
             const whereClause = {
                 active_status: true,
@@ -21,17 +27,15 @@ class ShipmentController{
                     { number: { [Op.like]: `%${search}%` } },
                     { '$shipment_detail.shipper$': { [Op.like]: `%${search}%` } }
                 ],
-                ...(datefilter && { createdAt: {
-                    [Op.gte]: new Date(datefilter.setHours(0, 0, 0, 0)),
-                    [Op.lt]: new Date(datefilter.setHours(23, 59, 59, 999))
-                } })
+                '$user.location$': getUser.location,
+                ...(startDate && endDate && { createdAt: { [Op.between]: [startDate.setHours(0, 0, 0, 0), endDate.setHours(23, 59, 59, 999) ] } }),
+                ...(startDate && !endDate && { createdAt: { [Op.gte]: startDate.setHours(0, 0, 0, 0) } }),
+                ...(!startDate && endDate && { createdAt: { [Op.lte]: endDate.setHours(23, 59, 59, 999) } })
             };
 
             const countShipment = await shipment.count({
                 where:whereClause,
-                include: [{
-                    model: shipment_detail
-                }]
+                include: [shipment_detail,users]
             })
             const totalPage = (countShipment%pageSize !=0? (Math.floor(countShipment/pageSize))+1:(Math.floor(countShipment/pageSize)))
 
@@ -41,6 +45,9 @@ class ShipmentController{
                 include: [{
                     model: shipment_detail,
                     attributes:['shipper','POL','POD','ETD','ETA']
+                },{
+                    model:users,
+                    attributes:['location']
                 }]
             })
             getAllShipment.sort((a, b) => a.createdAt - b.createdAt);
@@ -111,7 +118,7 @@ class ShipmentController{
     // add a new Shipment
     static async addShipment(req,res){
         try{
-            const {number, container_number, status,POL, POD, ETD, ETA, stuffing_date, shipper} = req.body
+            const {number, container_number, status,POL, POD, ETD, ETA, stuffing_date, shipper,remark_description} = req.body
             
             const createdetails= await shipment_detail.create({POL, POD, ETD, ETA, stuffing_date, shipper})
 
@@ -155,7 +162,7 @@ class ShipmentController{
                 return_empty: null,
                 status:status,
                 shipment_detail_id: createdetails.id,
-                remark_description: null,
+                remark_description: remark_description,
                 active_status: true,
                 delete_by: null
             })
