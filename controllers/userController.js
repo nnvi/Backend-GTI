@@ -246,7 +246,7 @@ class userController{
                 attributes: { only: ['image', 'password'] },
             });
 
-            if(req.file!= undefined){
+            if(req.file!= undefined&& getUser.image!=null){
                 const filename = getUser.image.replace(/^uploads[\\\/]/, '');
                 const filePath = path.join('uploads', filename);
         

@@ -5,10 +5,10 @@ const ContAuthorization = require('../middlewares/authorization')
 
 router.get('/containers',getContainer )
 router.get('/containers/dashboard',getContainerByStatus)
-router.get('/containers/history/:uuid',ContAuthorization,historyContainer)
+router.get('/containers/:uuid/history',historyContainer)
 router.post('/containers',ContAuthorization,addContainer)
-router.get('/containers/ready',ContAuthorization, ContainerReady)
-router.get('/containers/:uuid',ContAuthorization,getContainerbyUuid)
+router.get('/containers/ready', ContainerReady)
+router.get('/containers/:uuid',getContainerbyUuid)
 router.delete('/containers/:uuid',ContAuthorization, deleteContainer)
 router.put('/containers/:uuid',ContAuthorization, editContainer)
 

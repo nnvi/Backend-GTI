@@ -3,6 +3,7 @@ const {repair,container,log_activity, sequelize, Sequelize}= require('../models'
 const path = require('path');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
+const { where } = require('sequelize');
 
 class RepairController{
     //get all Repair
@@ -46,8 +47,6 @@ class RepairController{
                 const worksheet = workbook.addWorksheet('repairs');
     
                 worksheet.columns = [
-                    { header: 'ID', key: 'id', width: 10 },
-                    { header: 'UUID', key: 'uuid', width: 36 },
                     { header: 'Remarks', key: 'remarks', width: 36 },
                     { header: 'Container_Number', key: 'container_number', width: 20 },
                     { header: 'Container_Type', key: 'container_type', width: 15 },
@@ -58,8 +57,6 @@ class RepairController{
 
                 getAllRepair.map((value,idx)=>{
                     worksheet.addRow({
-                        id:value.id,
-                        uuid: value.uuid,
                         remarks: value.remarks,
                         container_number: value.container.number,
                         container_type: value.container.type,
@@ -96,19 +93,26 @@ class RepairController{
                 where:{
                     number: number
                 },
-                
-            })  
-            console.log(cont_id.status);
+            }) 
+            if(!cont_id){
+                throw{
+                    code:500,
+                    message:"container not found"
+                }
+            }
             
             if(cont_id.status == "Repair"){
                 return res.status(400).json({ Pesan: 'Kontainer sudah dalam perbaikan' });
-              };                        
+            }else if(cont_id.status=="In-Use"){
+                return res.status(400).json({ Pesan: 'Kontainer sedang digunakan dalam pengiriman' });
+            }                      
             const create = await repair.create({
                 uuid: uuidv4(),
                 user_id: req.UserData.id,
                 container_id: cont_id.id,
                 remarks: remarks,
-                image: req.file?req.file.path:null,            
+                image: req.file?req.file.path:null, 
+                finish: false          
             })
             const updateCont =await container.update({
                 status:"Repair"
@@ -153,7 +157,7 @@ class RepairController{
                 id: getrepairId.id,
                 uuid: getrepairId.uuid,
                 remarks: getrepairId.remarks,
-                image: getrepairId.image,
+                repair_image: getrepairId.image,
                 createdAt: getrepairId.createdAt,
                 container_number: getrepairId.container.number,
                 container_type: getrepairId.container.type,
@@ -319,6 +323,13 @@ class RepairController{
                 },
                 attributes: ['container_id'],
             });
+            const finishRepair = await repair.update({
+                finish:true
+            },{
+                where:{
+                    uuid:uuid
+                }
+            })
             const updateContainer = await container.update({
                 status: "Ready"
             },{
@@ -340,13 +351,13 @@ class RepairController{
     static async historyRepair(req,res){
         try{
             const {uuid} = req.params
-            const getRepair = await container.findOne({
+            const getRepair = await repair.findOne({
                 where:{uuid:uuid},
-                attributes:['id','number']
+                attributes:['container_id']
             })
             const getHistoryRepair = await repair.findAll({
                 where:{
-                    container_id: getRepair.id
+                    container_id: getRepair.container_id
                 },
                 attributes:['id','remarks','createdAt'],
                 include:[{

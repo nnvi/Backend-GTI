@@ -64,8 +64,6 @@ class ShipmentController{
                 const worksheet = workbook.addWorksheet('Shipments');
     
                 worksheet.columns = [
-                    { header: 'ID', key: 'id', width: 10 },
-                    { header: 'UUID', key: 'uuid', width: 36 },
                     { header: 'Number', key: 'number', width: 20 },
                     { header: 'Shipper', key: 'shipper', width: 15 },
                     { header: 'POL', key: 'POL', width: 15 },
@@ -79,8 +77,6 @@ class ShipmentController{
 
                 getAllShipment.map((shipment,idx)=>{
                     worksheet.addRow({
-                        id: shipment.id,
-                        uuid: shipment.uuid,
                         number: shipment.number,
                         status: shipment.status,
                         createdAt: shipment.createdAt,
@@ -126,6 +122,13 @@ class ShipmentController{
                 attributes:['id','number','status']
             })
 
+            if (cont_id.length !== container_number.length) {
+                throw {
+                    code: 400,
+                    message: "One or more container numbers are not found in the database."
+                };
+            }
+
             const checkShip = await shipment.findOne({
                 where:{number: number}
             })
@@ -135,12 +138,12 @@ class ShipmentController{
                     message: "Shipment number recorded, Please enter another number"
                 }
             }
-
+            
             cont_id.forEach(container => { 
                 if(container.status!= "Ready"){
                     throw{
                         code:401,
-                        message:`container ${container.id} status ${container.status}, please choose another container`
+                        message:`container ${container.number} status ${container.status}, please choose another container`
                     }
                 }                
             });

@@ -14,13 +14,13 @@ class containerController{
             const filterStatus = req.query.status || ''
             const filterlocation = req.query.location || ''
             const exportData = req.query.export || false;
-
+            console.log(filterStatus);
             const whereClause = {
                 status: {
                     [Sequelize.Op.ne]: 'Repair' 
                 },
                 ...(search && { number: { [Sequelize.Op.like]: `%${search}%` } }),
-                ...(filterStatus && { status: { [Sequelize.Op.like]: `%${filterStatus}%` } }),
+                ...(filterStatus && { status: filterStatus }),
                 ...(filterlocation && { location: { [Sequelize.Op.like]: `%${filterlocation}%` } })
             };
 
@@ -40,8 +40,6 @@ class containerController{
                 const worksheet = workbook.addWorksheet('containers');
     
                 worksheet.columns = [
-                    { header: 'ID', key: 'id', width: 10 },
-                    { header: 'UUID', key: 'uuid', width: 36 },
                     { header: 'Number', key: 'number', width: 20 },
                     { header: 'Type', key: 'type', width: 15 },
                     { header: 'Location', key: 'location', width: 15 },
@@ -51,8 +49,6 @@ class containerController{
 
                 getAllContainer.map((value,idx)=>{
                     worksheet.addRow({
-                        id:value.id,
-                        uuid: value.uuid,
                         number: value.number,
                         age: value.age,
                         location: value.location,

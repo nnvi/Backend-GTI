@@ -40,6 +40,10 @@ module.exports = (sequelize, DataTypes) => {
     image: {
       type: DataTypes.INTEGER,
       allowNull: true,
+    },
+    finish:{
+      type: DataTypes.BOOLEAN,
+      allowNull:false
     }
   }, {
     sequelize,

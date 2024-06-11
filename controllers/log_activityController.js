@@ -42,9 +42,9 @@ class LogActivityController{
 
             res.status(200).json({
                 page: page,
-                totalUsers: countLog,
+                totalLogs: countLog,
                 totalPage: totalPage,
-                users: paginationLog
+                logs: paginationLog
             })
         }
         catch(err){

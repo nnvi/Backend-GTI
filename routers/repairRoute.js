@@ -13,11 +13,11 @@ const storage = multer.diskStorage({
 const upload = multer({storage: storage})
 
 router.get('/repairs',getRepair )
-router.get('/repairs/history/:uuid',historyRepair)
+router.get('/repairs/:uuid/history',historyRepair)
 router.post('/repairs',upload.single('image'),addRepair)
 router.get('/repairs/:uuid',getRepairbyUuid)
 router.delete('/repairs/:uuid', deleteRepair)
 router.put('/repairs/:uuid',upload.single('image'), EditRepair)
-router.put('/repairs/finish/:uuid',FinishRepair)
+router.put('/repairs/:uuid/finish',FinishRepair)
 
 module.exports =router
