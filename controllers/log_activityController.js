@@ -31,7 +31,7 @@ class LogActivityController{
             }
 
             const getAllLogActivity=await log_activity.findAll({
-                attributes:['id','user_id','activity_info'],
+                attributes:['id','user_id','activity_info','createdAt'],
                 include:{
                     model: users,
                     attributes:['name']
