@@ -1,9 +1,10 @@
 const express = require('express')
 const router = express.Router()
-const {addContainer, getContainer, getContainerbyUuid, deleteContainer, editContainer, ContainerReady, getContainerByStatus, historyContainer} = require('../controllers/containerController')
+const {addContainer, getContainer, getContainerbyUuid, deleteContainer, editContainer, ContainerReady, getContainerByStatus, historyContainer, getLocationContainer} = require('../controllers/containerController')
 const ContAuthorization = require('../middlewares/authorization')
 
 router.get('/containers',getContainer )
+router.get('/containers/location',getLocationContainer)
 router.get('/containers/dashboard',getContainerByStatus)
 router.get('/containers/:uuid/history',historyContainer)
 router.post('/containers',ContAuthorization,addContainer)

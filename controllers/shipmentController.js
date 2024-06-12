@@ -28,9 +28,9 @@ class ShipmentController{
                     { '$shipment_detail.shipper$': { [Op.like]: `%${search}%` } }
                 ],
                 '$user.location$': getUser.location,
-                ...(startDate && endDate && { createdAt: { [Op.between]: [startDate.setHours(0, 0, 0, 0), endDate.setHours(23, 59, 59, 999) ] } }),
-                ...(startDate && !endDate && { createdAt: { [Op.gte]: startDate.setHours(0, 0, 0, 0) } }),
-                ...(!startDate && endDate && { createdAt: { [Op.lte]: endDate.setHours(23, 59, 59, 999) } })
+                ...(startDate && endDate && { ETD: { [Op.between]: [startDate.setHours(0, 0, 0, 0), endDate.setHours(23, 59, 59, 999) ] } }),
+                ...(startDate && !endDate && { ETD: { [Op.gte]: startDate.setHours(0, 0, 0, 0) } }),
+                ...(!startDate && endDate && { ETD: { [Op.lte]: endDate.setHours(23, 59, 59, 999) } })
             };
 
             const countShipment = await shipment.count({
@@ -62,7 +62,7 @@ class ShipmentController{
                 POL: shipment.shipment_detail.POL,
                 POD: shipment.shipment_detail.POD,
                 ETD: shipment.shipment_detail.ETD,
-                ETD: shipment.shipment_detail.ETA,
+                ETA: shipment.shipment_detail.ETA,
                 remark_description: shipment.remark_description
             }))
 

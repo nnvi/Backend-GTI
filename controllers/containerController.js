@@ -1,6 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const {container,users,log_activity,shipment,shipment_containers,shipment_detail, Sequelize}= require('../models');
 const ExcelJS = require('exceljs');
+const { where } = require('sequelize');
 
 class containerController{
     //get all container
@@ -14,7 +15,7 @@ class containerController{
             const filterStatus = req.query.status || ''
             const filterlocation = req.query.location || ''
             const exportData = req.query.export || false;
-            console.log(filterStatus);
+
             const whereClause = {
                 status: {
                     [Sequelize.Op.ne]: 'Repair' 
@@ -353,6 +354,22 @@ class containerController{
             res.status(500).json({
                 message: err.message
             })
+        }
+    }
+
+    static async getLocationContainer(req,res){
+        try {
+            const getLocation = await container.findAll({
+                attributes:['location']
+            });
+            const location = getLocation.map(item=>item.location)
+            res.status(200).json({
+                location: [...new Set(location)]
+            });
+        } catch (err) {
+            res.status(500).json({
+                message: err.message
+            });
         }
     }
 }
