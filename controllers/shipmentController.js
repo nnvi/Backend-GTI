@@ -13,7 +13,7 @@ class ShipmentController{
             const end = page*pageSize
             const search = req.query.search || '';
             const startDate = req.query.startDate ? new Date(req.query.startDate) : null;
-            const endDate = req.query.endDate ? new Date(req.query.endDate) : null;
+            const endDate = req.query.endDate ? new Date(`${req.query.endDate}T23:59:59.999`) : null;
             const exportData = req.query.export || false;
 
             const getUser = await users.findOne({
@@ -21,10 +21,10 @@ class ShipmentController{
                 attributes:['location']
             })
             if (startDate) {
-                startDate.setHours(startDate.getHours() - 7); // Set start date to beginning of the day in UTC
+                startDate.setHours(startDate.getHours() - 7);
             }
             if (endDate) {
-                endDate.setHours(endDate.getHours() - 7); // Set end date to end of the day in UTC
+                endDate.setHours(endDate.getHours() - 7);
             }
 
             const whereClause = {
