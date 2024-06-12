@@ -244,10 +244,10 @@ class ShipmentController{
             res.status(200).json({
                 shipment:{
                     container: containerNumbers,
-                    shipment_uuid: shipmentInfo.uuid,
-                    shipment_number: shipmentInfo.number,
-                    shipment_status: shipmentInfo.status,
-                    shipment_remark: shipmentInfo.remark_description,
+                    uuid: shipmentInfo.uuid,
+                    number: shipmentInfo.number,
+                    status: shipmentInfo.status,
+                    remark_description: shipmentInfo.remark_description,
                     POL: shipmentDetails.POL,
                     POD: shipmentDetails.POD,
                     ETD: shipmentDetails.ETD,
