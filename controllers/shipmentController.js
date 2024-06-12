@@ -13,13 +13,19 @@ class ShipmentController{
             const end = page*pageSize
             const search = req.query.search || '';
             const startDate = req.query.startDate ? new Date(req.query.startDate) : null;
-            const endDate = req.query.endDate ? new Date(req.query.endDate) : null;
+            const endDate = req.query.endDate ? new Date(`${req.query.endDate}T23:59:59.999`) : null;
             const exportData = req.query.export || false;
 
             const getUser = await users.findOne({
                 where:{id:req.UserData.id},
                 attributes:['location']
             })
+            if (startDate) {
+                startDate.setHours(startDate.getHours() - 7);
+            }
+            if (endDate) {
+                endDate.setHours(endDate.getHours() - 7);
+            }
 
             const whereClause = {
                 active_status: true,
@@ -28,9 +34,9 @@ class ShipmentController{
                     { '$shipment_detail.shipper$': { [Op.like]: `%${search}%` } }
                 ],
                 '$user.location$': getUser.location,
-                ...(startDate && endDate && { ETD: { [Op.between]: [startDate.setHours(0, 0, 0, 0), endDate.setHours(23, 59, 59, 999) ] } }),
-                ...(startDate && !endDate && { ETD: { [Op.gte]: startDate.setHours(0, 0, 0, 0) } }),
-                ...(!startDate && endDate && { ETD: { [Op.lte]: endDate.setHours(23, 59, 59, 999) } })
+                ...(startDate && endDate && { '$shipment_detail.ETD$': { [Op.between]: [startDate, endDate] } }),
+                ...(startDate && !endDate && { '$shipment_detail.ETD$': { [Op.gte]: startDate } }),
+                ...(!startDate && endDate && { '$shipment_detail.ETD$': { [Op.lte]: endDate } })
             };
 
             const countShipment = await shipment.count({
