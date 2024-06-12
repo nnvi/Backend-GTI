@@ -275,7 +275,7 @@ class containerController{
                 where:{
                     status: "Ready"
                 },
-                attributes:['number']
+                attributes:['number','age','location','type']
             })
             res.status(200).json({
                 container: ready

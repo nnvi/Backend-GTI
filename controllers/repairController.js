@@ -36,10 +36,10 @@ class RepairController{
                 uuid: repair.uuid,
                 remarks: repair.remarks,
                 createdAt: repair.createdAt,
-                container_number: repair.container.number,
-                container_type: repair.container.type,
-                container_location: repair.container.location,
-                container_age: repair.container.age
+                number: repair.container.number,
+                type: repair.container.type,
+                location: repair.container.location,
+                age: repair.container.age
             }))
 
             if (exportData) {
@@ -157,12 +157,12 @@ class RepairController{
                 id: getrepairId.id,
                 uuid: getrepairId.uuid,
                 remarks: getrepairId.remarks,
-                repair_image: getrepairId.image,
+                image: getrepairId.image,
                 createdAt: getrepairId.createdAt,
-                container_number: getrepairId.container.number,
-                container_type: getrepairId.container.type,
-                container_location: getrepairId.container.location,
-                container_age: getrepairId.container.age
+                number: getrepairId.container.number,
+                type: getrepairId.container.type,
+                location: getrepairId.container.location,
+                age: getrepairId.container.age
             }
             res.status(200).json({repair:setresponse})
         }catch(err){
