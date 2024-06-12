@@ -12,14 +12,20 @@ class ShipmentController{
             const start = (page-1)*pageSize
             const end = page*pageSize
             const search = req.query.search || '';
-            const startDate = req.query.startDate ? new Date(req.query.startDate.split('T')[0] + 'T00:00:00.000Z') : null;
-            const endDate = req.query.endDate ? new Date(req.query.endDate.split('T')[0] + 'T23:59:59.999Z') : null;
+            const startDate = req.query.startDate ? new Date(req.query.startDate) : null;
+            const endDate = req.query.endDate ? new Date(req.query.endDate) : null;
             const exportData = req.query.export || false;
 
             const getUser = await users.findOne({
                 where:{id:req.UserData.id},
                 attributes:['location']
             })
+            if (startDate) {
+                startDate.setHours(startDate.getHours() - 7); // Set start date to beginning of the day in UTC
+            }
+            if (endDate) {
+                endDate.setHours(endDate.getHours() - 7); // Set end date to end of the day in UTC
+            }
 
             const whereClause = {
                 active_status: true,
