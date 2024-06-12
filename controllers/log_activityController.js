@@ -13,8 +13,6 @@ class LogActivityController{
 
             const checkDate = /^\d{4}-\d{2}-\d{2}$/;
 
-            const countLog = await log_activity.count()
-            const totalPage = (countLog % pageSize != 0? (Math.floor(countLog/pageSize))+1: countLog/pageSize)
             let whereClause = {};
             if (checkDate.test(search)) {
                 whereClause = {
@@ -29,7 +27,11 @@ class LogActivityController{
                     }
                 };
             }
-
+            const countLog = await log_activity.count({
+                where:whereClause,
+                include:[users]
+            })
+            const totalPage = (countLog % pageSize != 0? (Math.floor(countLog/pageSize))+1: countLog/pageSize)
             const getAllLogActivity=await log_activity.findAll({
                 attributes:['id','user_id','activity_info','createdAt'],
                 include:{
