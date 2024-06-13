@@ -1,7 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const {container,users,log_activity,shipment,shipment_containers,shipment_detail, Sequelize}= require('../models');
 const ExcelJS = require('exceljs');
-const { where } = require('sequelize');
 
 class containerController{
     //get all container
@@ -105,7 +104,7 @@ class containerController{
                 user_id: req.UserData.id,
                 shipment_id: null,
                 repair_id: null,
-                activity_info: "Added New Container"
+                activity_info: `Added New Container ${create.number}`
             })
 
             res.status(201).json({
@@ -197,18 +196,19 @@ class containerController{
     static async deleteContainer(req,res){
         try{
             const {uuid}= req.params
+            const getCont = await container.findOne({where:{uuid:uuid},attributes:['number','status']})
+            if(getCont.status != "Ready"){
+                throw{
+                    code: 401,
+                    message:`Container currently ${getCont.status}, Can't Delete this data`
+                }
+            }
             const deletecontainer = await container.destroy({where:{uuid:uuid}})
             const delContainerLog = await log_activity.create({
                 user_id: req.UserData.id,
                 shipment_id: null,
                 repair_id: null,
-                activity_info: "Deleted Container"
-            })
-            const addContainerLog = await log_activity.create({
-                user_id: req.UserData.id,
-                shipment_id: null,
-                repair_id: null,
-                activity_info: "Deleted a Container"
+                activity_info: `Deleted Container ${getCont.number}`
             })
             res.status(200).json({
                 message: "deleted container success"
@@ -237,12 +237,6 @@ class containerController{
                 where:{uuid: uuid},
                 returning: true
             })
-            const EditContLog = await log_activity.create({
-                user_id: req.UserData.id,
-                shipment_id: null,
-                repair_id: null,
-                activity_info: "Edited container data"
-            })
             res.status(200).json({
                 status: "update containers successful",
                 container: {
@@ -255,11 +249,11 @@ class containerController{
                     type: editcontainer[1][0].type
                 }
             })
-            const addContainerLog = await log_activity.create({
+            const EditContLog = await log_activity.create({
                 user_id: req.UserData.id,
                 shipment_id: null,
                 repair_id: null,
-                activity_info: "Updated a Container"
+                activity_info: `Edited container data ${editcontainer[1][0].number}`
             })
         }catch(err){
             res.status(402).json({

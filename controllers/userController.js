@@ -53,7 +53,7 @@ class userController{
             })
       
           } catch (error) {
-            res.status(error?.code || 500).json(error)
+            res.status(error?.code || 500).json(error.message)
             
           }
     }
@@ -73,7 +73,7 @@ class userController{
               user: getMe,
             });
           } catch (err) {
-            res.status(err?.code || 500).json(err);
+            res.status(err?.code || 500).json(err.message);
           }
       
     } 
@@ -103,7 +103,7 @@ class userController{
             })
         }
         catch(err){
-            res.status(500).json({message:err})
+            res.status(500).json({message:err.message})
         }
     }
 
@@ -145,7 +145,7 @@ class userController{
                 user_id: req.UserData.id,
                 shipment_id: null,
                 repair_id: null,
-                activity_info: "add new user"
+                activity_info: `add new user ${create.name}`
             })
             res.status(201).json({
                 message: "Add new User Successful",
@@ -183,7 +183,7 @@ class userController{
             res.status(200).json({user:getUserId})
         }catch(err){
             res.status(501).json({
-                message:err
+                message:err.message
             })
         }
     }
@@ -195,7 +195,7 @@ class userController{
             where: {
               uuid: uuid,
             },
-            attributes: { only: ['image'] },
+            attributes: { only: ['image','name'] },
           });
     
           if(getUser.image!= null){
@@ -217,12 +217,11 @@ class userController{
               uuid: uuid,
             },
           });
-          console.log(deleteUser);
           const delUserLog = await log_activity.create({
             user_id: req.UserData.id,
             shipment_id: null,
             repair_id: null,
-            activity_info: "delete user data",
+            activity_info: `delete user data ${getUser.name}`,
           });
           res.status(200).json({
             message: 'deleted user success',
@@ -243,7 +242,7 @@ class userController{
                 where: {
                   uuid: uuid,
                 },
-                attributes: { only: ['image', 'password'] },
+                attributes: { only: ['name','image', 'password'] },
             });
 
             if(req.file!= undefined&& getUser.image!=null){
@@ -275,7 +274,7 @@ class userController{
                 user_id: req.UserData.id,
                 shipment_id: null,
                 repair_id: null,
-                activity_info: "edit user data"
+                activity_info: `edit user data ${getUser.name}`
             })
             res.status(200).json({
                 status: "update users successful",

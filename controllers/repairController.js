@@ -3,7 +3,9 @@ const {repair,container,log_activity, sequelize, Sequelize}= require('../models'
 const path = require('path');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
-const { where } = require('sequelize');
+require('dotenv').config();
+const host = process.env.HOST;
+const port = process.env.PORT;
 
 class RepairController{
     //get all Repair
@@ -23,7 +25,7 @@ class RepairController{
                 where:{
                     '$container.number$':{[Sequelize.Op.like]:`%${search}%`}
                 },
-                attributes:['id','uuid','remarks','createdAt'],
+                attributes:['id','uuid','remarks','createdAt','finish'],
                 include: [{
                     model: container,
                     attributes:['number','type','location','age']
@@ -47,11 +49,12 @@ class RepairController{
                 const worksheet = workbook.addWorksheet('repairs');
     
                 worksheet.columns = [
-                    { header: 'Remarks', key: 'remarks', width: 36 },
-                    { header: 'Container_Number', key: 'container_number', width: 20 },
+                    { header: 'Remarks', key: 'remarks', width: 15 },
+                    { header: 'Container_Number', key: 'container_number', width: 15 },
                     { header: 'Container_Type', key: 'container_type', width: 15 },
                     { header: 'Container_Location', key: 'container_location', width: 15 },
                     { header: 'Container_Age', key: 'container_age', width: 10 },
+                    { header: 'Finish_Status', key: 'finish_status', width: 10 },
                     { header: 'CreatedAt', key: 'createdAt', width: 10 }
                 ];
 
@@ -62,6 +65,7 @@ class RepairController{
                         container_type: value.container.type,
                         container_location: value.container.location,
                         container_age: value.container.age,
+                        finish_status: value.finish,
                         createdAt: value.createdAt
                     })
                 })
@@ -125,7 +129,7 @@ class RepairController{
                 user_id: req.UserData.id,
                 shipment_id: null,
                 repair_id: null,
-                activity_info: "Added New Repairment"
+                activity_info: `Added New Repairment ${create.id}`
             })
             res.status(201).json({
                 meesage:"add repair successfull",
@@ -150,15 +154,18 @@ class RepairController{
                 attributes:['id','uuid','remarks','createdAt','image'],
                 include: [{
                     model: container,
-                    attributes:['number','age','location','type']
+                    attributes:['uuid','number','age','location','type']
                 }]
             })
+            getrepairId.image = getrepairId.image
+            ?`${host}:${port}/${getrepairId.image.replace(/\\/g,'/')}`:null;
             const setresponse = {
                 id: getrepairId.id,
                 uuid: getrepairId.uuid,
                 remarks: getrepairId.remarks,
                 image: getrepairId.image,
                 createdAt: getrepairId.createdAt,
+                container_uuid: getrepairId.container.uuid,
                 number: getrepairId.container.number,
                 type: getrepairId.container.type,
                 location: getrepairId.container.location,
@@ -180,7 +187,7 @@ class RepairController{
               where: {
                 uuid: uuid,
               },
-              attributes: { only: ['image','container_id'] },
+              attributes: { only: ['image','id','container_id'] },
             });
             
             if(getRepair.image != null){
@@ -204,7 +211,6 @@ class RepairController{
                 },
                 returning:true
             })
-            console.log(updateContainer[1][0].status);
 
             const deleteRepair = await repair.destroy({
                 where: {
@@ -215,8 +221,8 @@ class RepairController{
             const addRepairLog = await log_activity.create({
                 user_id: req.UserData.id,
                 shipment_id: null,
-                repair_id: deleteRepair.id,
-                activity_info: "Deleted a Repairment"
+                repair_id: getRepair.id,
+                activity_info: `Deleted a Repairment ${getRepair.id}`
             })
             res.status(200).json({
                 message: 'delete Repair success',
@@ -297,7 +303,7 @@ class RepairController{
                 user_id: req.UserData.id,
                 shipment_id: null,
                 repair_id: getRepair.id,
-                activity_info: "edit repair data"
+                activity_info: `edit repair container ${editRepair[1][0].id}`
             })
             res.status(200).json({
                 status: "update Repair successful",
@@ -338,6 +344,12 @@ class RepairController{
                 },
                 returning:true
             })
+            const finishRepairLog = await log_activity.create({
+                user_id: req.UserData.id,
+                shipment_id: null,
+                repair_id: deleteRepair.id,
+                activity_info: `Repairment ${updateContainer[1][0].number} finished`
+            })
             res.status(200).json({
                 message: `repair container ${updateContainer[1][0].number} finished`
             })
@@ -353,7 +365,11 @@ class RepairController{
             const {uuid} = req.params
             const getRepair = await repair.findOne({
                 where:{uuid:uuid},
-                attributes:['container_id']
+                attributes:['container_id'],
+                include:{
+                    model:container,
+                    attributes:['number']
+                }
             })
             const getHistoryRepair = await repair.findAll({
                 where:{
@@ -372,7 +388,7 @@ class RepairController{
                 createdAt: history.createdAt
             }))
             res.status(200).json({
-                status:`Get History repair from container ${getRepair.number}`,
+                status:`Get History repair from container ${getRepair.container.number}`,
                 history:setresponse
             })
         }catch(err){
