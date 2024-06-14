@@ -211,19 +211,20 @@ class RepairController{
                 },
                 returning:true
             })
-
-            const deleteRepair = await repair.destroy({
-                where: {
-                    uuid: uuid,
-                },
-            });
-            
+                        
             const addRepairLog = await log_activity.create({
                 user_id: req.UserData.id,
                 shipment_id: null,
                 repair_id: getRepair.id,
                 activity_info: `Deleted a Repairment ${getRepair.id}`
             })
+
+            const deleteRepair = await repair.destroy({
+                where: {
+                    uuid: uuid,
+                },
+            });
+
             res.status(200).json({
                 message: 'delete Repair success',
             });
@@ -347,7 +348,7 @@ class RepairController{
             const finishRepairLog = await log_activity.create({
                 user_id: req.UserData.id,
                 shipment_id: null,
-                repair_id: deleteRepair.id,
+                repair_id: getRepair.id,
                 activity_info: `Repairment ${updateContainer[1][0].number} finished`
             })
             res.status(200).json({
