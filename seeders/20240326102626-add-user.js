@@ -18,7 +18,7 @@ module.exports = {
       uuid: uuidv4(),
       name: "SPV 2",
       email: "superadmin2@giant.com",
-      password: "$2y$10$cucalmUwA8lWYKKsVAqmj.ri2.ITCK74vBeqwTxuGQmU5UiPWBU8K",// password: superadmin2
+      password: "$2b$10$ZvU/OvfUICnjaSd8mfkJ5enQnc8RTs0pm51g2Si19h61GBrPcOHri",// password: superadmin2
       role: "Super Admin",
       location: "Medan",
       image: "https://source.unsplash.com/200x200/?woman",
@@ -28,7 +28,7 @@ module.exports = {
       uuid: uuidv4(),
       name: "SPV 3",
       email: "superadmin3@giant.com",
-      password: "$2y$10$d1URa9Q4qmn6HJdnqXiXH.uDZYnlFPTLNdG4AGFJCCiubCU6fFRK6",// password: superadmin3
+      password: "$2b$10$zonwJNGrviOL3ZExWXdm.O7rkWwNg6yjxBQnJwP97SHAebJMAPgz.",// password: superadmin3
       role: "Super Admin",
       location: "Surabaya",
       image: "https://source.unsplash.com/200x200/?woman",
@@ -38,7 +38,7 @@ module.exports = {
       uuid: uuidv4(),
       name: "CS 1",
       email: "customerservice@giant.com",
-      password: "$2y$10$n7f3Aw0PrsIYMArv8BOUIeh3J1hCPU9xW9rcL7Ubwr7RWz3Ct/2ry",// password: customerservice
+      password: "$2b$10$mXzjbWzrjEbVzJ1JSKtaeukyqFCVGCb6B7Fdz8U4SobLYUIXd6k5S",// password: customerservice
       role: "Customer Service",
       location: "Jakarta",
       image: "https://source.unsplash.com/200x200/?woman",
@@ -48,7 +48,7 @@ module.exports = {
       uuid: uuidv4(),
       name: "OPR 1",
       email: "operational@giant.com",
-      password: "$2y$10$hDkqS0WFZLOQ2pUTowqs4eNDLBeIgbO9GD5/1Hq4WlfHmHZRqaNne",// password: operational
+      password: "$2b$10$jV4dMgCkSCxZYAhG7eo0oOA6B2q9wOjtpRL3akphGwLz.278OFzrW",// password: operational
       role: "Operasional",
       location: "Jakarta",
       image: "https://source.unsplash.com/200x200/?woman",
