@@ -249,7 +249,7 @@ class ShipmentController{
 
             res.status(200).json({
                 shipment:{
-                    container: containerNumbers,
+                    container_number: containerNumbers,
                     uuid: shipmentInfo.uuid,
                     number: shipmentInfo.number,
                     status: shipmentInfo.status,
@@ -331,7 +331,7 @@ class ShipmentController{
     //edit data shipment by uuid
     static async editShipment(req,res){
         try{
-            const {number,container, status,POL, POD, ETD, ETA, stuffing_date, shipper, remark_description} = req.body
+            const {number,container_number, status,POL, POD, ETD, ETA, stuffing_date, shipper, remark_description} = req.body
             const {uuid} = req.params
             
             const getShipment = await shipment.findOne({
@@ -350,7 +350,7 @@ class ShipmentController{
             })
             const cont_id =  await container.findAll({
                 where:{
-                    number: container
+                    number: container_number
                 },
                 attributes:['id']
             })
@@ -395,7 +395,7 @@ class ShipmentController{
                     status:"Ready"
                 },{
                     where:{
-                        number:container
+                        number:container_number
                     }
                 })
             }
@@ -430,7 +430,7 @@ class ShipmentController{
                     uuid: editShipment[1][0].uuid,
                     number: editShipment[1][0].number,
                     user_id: editShipment[1][0].user_id,
-                    container: cont_id.map(container=>container.id),
+                    container_number: cont_id.map(container=>container.id),
                     return_empty: editShipment[1][0].return_empty,
                     status: editShipment[1][0].status,
                     shipment_detail_id: editShipment[1][0].createdetails_id,
