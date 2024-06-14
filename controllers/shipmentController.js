@@ -331,7 +331,7 @@ class ShipmentController{
     //edit data shipment by uuid
     static async editShipment(req,res){
         try{
-            const {number,container_number, status,POL, POD, ETD, ETA, stuffing_date, shipper, remark_description} = req.body
+            const {number,container, status,POL, POD, ETD, ETA, stuffing_date, shipper, remark_description} = req.body
             const {uuid} = req.params
             
             const getShipment = await shipment.findOne({
@@ -350,7 +350,7 @@ class ShipmentController{
             })
             const cont_id =  await container.findAll({
                 where:{
-                    number: container_number
+                    number: container
                 },
                 attributes:['id']
             })
@@ -395,7 +395,7 @@ class ShipmentController{
                     status:"Ready"
                 },{
                     where:{
-                        number:container_number
+                        number:container
                     }
                 })
             }
