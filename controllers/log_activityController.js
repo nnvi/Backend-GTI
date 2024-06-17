@@ -43,6 +43,7 @@ class LogActivityController{
             const paginationLog = getAllLogActivity.slice(start,end)
 
             res.status(200).json({
+                message: "Get Log data Successfull",
                 page: page,
                 totalLogs: countLog,
                 totalPage: totalPage,

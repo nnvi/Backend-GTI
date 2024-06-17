@@ -1,16 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const {addRepair, getRepair, getRepairbyUuid, deleteRepair, EditRepair, FinishRepair, historyRepair} = require('../controllers/repairController')
-const multer = require('multer')
-const storage = multer.diskStorage({
-    destination: function(req,file, cb){
-        cb(null, './uploads');
-    },
-    filename: function(req,file, cb){
-        cb(null, file.originalname);
-    }
-})
-const upload = multer({storage: storage})
+const upload = require('../middlewares/multer')
 
 router.get('/repairs',getRepair )
 router.get('/repairs/:uuid/history',historyRepair)

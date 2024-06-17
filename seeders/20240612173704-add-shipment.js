@@ -15,7 +15,7 @@ module.exports = {
     },{
       uuid: uuidv4(),
       number: "GTIBLWRFR001036",
-      user_id: "1",
+      user_id: "2",
       status: "Arrive",
       shipment_detail_id: "2",
       active_status:"true",
@@ -24,7 +24,7 @@ module.exports = {
     },{
       uuid: uuidv4(),
       number: "GTIBLWRFR001034",
-      user_id: "1",
+      user_id: "3",
       status: "Arrive",
       shipment_detail_id: "3",
       active_status:"true",
@@ -33,7 +33,7 @@ module.exports = {
     },{
       uuid: uuidv4(),
       number: "GTIBLWRFR001029",
-      user_id: "1",
+      user_id: "2",
       status: "Arrive",
       shipment_detail_id: "4",
       active_status:"true",
@@ -42,7 +42,7 @@ module.exports = {
     },{
       uuid: uuidv4(),
       number: "GTIBLWRFR001037",
-      user_id: "1",
+      user_id: "3",
       status: "Departure",
       shipment_detail_id: "5",
       active_status:"true",
@@ -69,7 +69,7 @@ module.exports = {
     },{
       uuid: uuidv4(),
       number: "GTIBLWRFR001028",
-      user_id: "1",
+      user_id: "2",
       status: "Arrive",
       shipment_detail_id: "8",
       active_status:"true",
@@ -87,7 +87,7 @@ module.exports = {
     },{
       uuid: uuidv4(),
       number: "GTIBLWRFR001016",
-      user_id: "1",
+      user_id: "3",
       status: "Departure",
       shipment_detail_id: "10",
       active_status:"true",

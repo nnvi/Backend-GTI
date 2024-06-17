@@ -2,11 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const { generateToken } = require("../helpers/jwt")
 const {comparePassword, hashPassword}= require('../helpers/bcrypt')
 const {users,log_activity}= require('../models')
-require('dotenv').config();
-const host = process.env.HOST;
-const port = process.env.PORT;
-const path = require('path');
-const fs = require('fs');
+const cloudinary = require('../middlewares/cloudinary')
 
 class userController{
     //user login
@@ -64,12 +60,9 @@ class userController{
             const getMe = await users.findByPk(req.UserData.id, {
               attributes: { exclude: ['password', 'createdAt', 'updatedAt'] },
             });
-      
-            getMe.image = getMe.image
-              ? `${host}:${port}/${getMe.image.replace(/\\/g, '/')}`
-              : null;
-      
+
             res.status(200).json({
+              message:"Get Me Successful!",
               user: getMe,
             });
           } catch (err) {
@@ -96,6 +89,7 @@ class userController{
             const paginationUser = getAllUser.slice(start,end)
 
             res.status(200).json({
+                message: "Get User data Successful",
                 page: page,
                 totalUsers: countUser,
                 totalPage: totalPage,
@@ -122,7 +116,21 @@ class userController{
                     message: "Email already used"
                 }
             }
-            
+            let result = {}
+            if(req.file != null ||req.file != undefined){
+                result = await cloudinary.uploader.upload(req.file.path,{folder: "profile_pictures"},function(err,result){
+                    if(err){
+                        console.log(err);
+                        return res.status(500).json({
+                            status: "failed upload pictures",
+                            message: err
+                        })
+                    }
+                    return result
+                });
+            }else{
+                result = null
+            }
             const create = await users.create({
                 uuid: uuidv4(),
                 name: name,
@@ -130,7 +138,7 @@ class userController{
                 password: hashedPassword,
                 role:role,
                 location: location,
-                image: (req.file== undefined? null :req.file.path)
+                image: (result== null? result: result.secure_url)
             },function(err,result){
                 if(err){
                     console.log(err);
@@ -148,7 +156,7 @@ class userController{
                 activity_info: `add new user ${create.name}`
             })
             res.status(201).json({
-                message: "Add new User Successful",
+                message: `Add New User ${create.name} Successful`,
                 user: {
                     id: create.id,
                     uuid: create.uuid,
@@ -177,10 +185,10 @@ class userController{
                 attributes:{exclude:['password','createdAt','updatedAt']}
             });
 
-            getUserId.image = getUserId.image
-            ?`${host}:${port}/${getUserId.image.replace(/\\/g,'/')}`:null;
-
-            res.status(200).json({user:getUserId})
+            res.status(200).json({
+              message: `Get User ${getUserId.name} details Successful`,
+              user:getUserId
+            })
         }catch(err){
             res.status(501).json({
                 message:err.message
@@ -199,17 +207,16 @@ class userController{
           });
     
           if(getUser.image!= null){
-            const filename = getUser.image.replace(/^uploads[\\\/]/, '');
-            const filePath = path.join('uploads', filename);
-    
-            if (filename != null) {
-                fs.unlink(filePath, (err) => {
-                  if (err) {
-                    console.error(err);
-                    return;
-                }
+            const imageName = `profile_pictures/${getUser.image.split('/').pop().split('.')[0]}`; 
+            await cloudinary.uploader.destroy(imageName, function(err, result) {
+              if (err) {
+                console.log(err);
+                return res.status(500).json({
+                  status: "failed to delete old picture",
+                  message: err
                 });
-            }
+              }
+            });
           }          
     
           const deleteUser = await users.destroy({
@@ -224,7 +231,7 @@ class userController{
             activity_info: `delete user data ${getUser.name}`,
           });
           res.status(200).json({
-            message: 'deleted user success',
+            message: `Deleted User ${getUser.name} Successful`,
           });
         } catch (err) {
           res.status(401).json({
@@ -244,19 +251,40 @@ class userController{
                 },
                 attributes: { only: ['name','image', 'password'] },
             });
+            if (!getUser) {
+              return res.status(404).json({
+                  status: "failed",
+                  message: "User not found"
+              });
+            }
 
-            if(req.file!= undefined&& getUser.image!=null){
-                const filename = getUser.image.replace(/^uploads[\\\/]/, '');
-                const filePath = path.join('uploads', filename);
-        
-                if (filename != null) {
-                    fs.unlink(filePath, (err) => {
-                      if (err) {
-                        console.error(err);
-                        return;
-                    }
+            let result = {};
+            if (req.file) {
+              if (getUser.image) {
+                const imageName = `profile_pictures/${getUser.image.split('/').pop().split('.')[0]}`; 
+                await cloudinary.uploader.destroy(imageName, function(err, result) {
+                  if (err) {
+                    console.log(err);
+                    return res.status(500).json({
+                      status: "failed to delete old picture",
+                      message: err
                     });
+                  }
+                });
+              }
+
+              result = await cloudinary.uploader.upload(req.file.path, {folder: "profile_pictures"}, function(err, result) {
+                if (err) {
+                  console.log(err);
+                  return res.status(500).json({
+                    status: "failed upload picture",
+                    message: err
+                  });
                 }
+                return result;
+              });
+            } else {
+              result = null;
             }
             const editUser = await users.update({
                 name:name,
@@ -264,7 +292,7 @@ class userController{
                 password:hashedPassword? hashedPassword:getUser.password,
                 role:role,
                 location:location,
-                image: (req.file==undefined?getUser.image:req.file.path)
+                image: result ? result.secure_url : getUser.image
             },{
                 where:{uuid: uuid},
                 returning: true
@@ -277,7 +305,7 @@ class userController{
                 activity_info: `edit user data ${getUser.name}`
             })
             res.status(200).json({
-                status: "update users successful",
+                status: `Update Users ${getUser.name} Successful`,
                 user: {
                     id: editUser[1][0].id,
                     uuid: editUser[1][0].uuid,

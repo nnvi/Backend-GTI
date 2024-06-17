@@ -3,9 +3,7 @@ const {repair,container,log_activity, sequelize, Sequelize}= require('../models'
 const path = require('path');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
-require('dotenv').config();
-const host = process.env.HOST;
-const port = process.env.PORT;
+const cloudinary = require('../middlewares/cloudinary')
 
 class RepairController{
     //get all Repair
@@ -31,7 +29,7 @@ class RepairController{
                     attributes:['number','type','location','age']
                 }, container],
             })
-            getAllRepair.sort((a, b) => a.createdAt - b.createdAt);
+            getAllRepair.sort((a, b) => b.createdAt - a.createdAt);
 
             const setresponse = getAllRepair.map(repair =>({
                 id: repair.id,
@@ -77,6 +75,7 @@ class RepairController{
                 const pageRepair = setresponse.slice(start,end)
 
                 res.status(200).json({
+                    message:`Get Repairs data Successful`,
                     page: page,
                     totalRepair: countRepair,
                     totalPage: totalPage,
@@ -109,7 +108,22 @@ class RepairController{
                 return res.status(400).json({ Pesan: 'Kontainer sudah dalam perbaikan' });
             }else if(cont_id.status=="In-Use"){
                 return res.status(400).json({ Pesan: 'Kontainer sedang digunakan dalam pengiriman' });
-            }                      
+            }
+            let result = {}
+            if(req.file != null ||req.file != undefined){
+                result = await cloudinary.uploader.upload(req.file.path,{folder: "repair_picture"},function(err,result){
+                    if(err){
+                        console.log(err);
+                        return res.status(500).json({
+                            status: "failed upload pictures",
+                            message: err
+                        })
+                    }
+                    return result
+                });
+            }else{
+                result = null
+            }         
             const create = await repair.create({
                 uuid: uuidv4(),
                 user_id: req.UserData.id,
@@ -129,10 +143,10 @@ class RepairController{
                 user_id: req.UserData.id,
                 shipment_id: null,
                 repair_id: null,
-                activity_info: `Added New Repairment ${create.id}`
+                activity_info: `Added New Repairment ${number}`
             })
             res.status(201).json({
-                meesage:"add repair successfull",
+                meesage: `Add Repair ${number} Successfull`,
                 repair: create
             })
         }catch(err){
@@ -171,7 +185,10 @@ class RepairController{
                 location: getrepairId.container.location,
                 age: getrepairId.container.age
             }
-            res.status(200).json({repair:setresponse})
+            res.status(200).json({
+                message:`Get Repairs ${getrepairId.id} details Successful`,
+                repair:setresponse
+            })
         }catch(err){
             res.status(501).json({
                 message:err.message
@@ -188,6 +205,10 @@ class RepairController{
                 uuid: uuid,
               },
               attributes: { only: ['image','id','container_id'] },
+              include:[{
+                model:container,
+                attributes:['number']
+              }]
             });
             
             if(getRepair.image != null){
@@ -226,7 +247,7 @@ class RepairController{
             });
 
             res.status(200).json({
-                message: 'delete Repair success',
+                message: `Delete Repair ${getRepair.id} Successful`,
             });
             } catch (err) {
                 res.status(401).json({
@@ -307,7 +328,7 @@ class RepairController{
                 activity_info: `edit repair container ${editRepair[1][0].id}`
             })
             res.status(200).json({
-                status: "update Repair successful",
+                status: `Update Repair ${editRepair[1][0].id} Successful`,
                 repair:{
                     number: cont_id.number,
                     remarks: editRepair[1][0].remarks,
@@ -352,7 +373,7 @@ class RepairController{
                 activity_info: `Repairment ${updateContainer[1][0].number} finished`
             })
             res.status(200).json({
-                message: `repair container ${updateContainer[1][0].number} finished`
+                message: `Repair Container ${updateContainer[1][0].number} Finished`
             })
         }catch(err){
             res.status(501).json({
@@ -389,7 +410,7 @@ class RepairController{
                 createdAt: history.createdAt
             }))
             res.status(200).json({
-                status:`Get History repair from container ${getRepair.container.number}`,
+                status:`Get History Repair from Container ${getRepair.container.number}`,
                 history:setresponse
             })
         }catch(err){
