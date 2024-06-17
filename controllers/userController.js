@@ -62,7 +62,6 @@ class userController{
             });
 
             res.status(200).json({
-              message:"Get Me Successful!",
               user: getMe,
             });
           } catch (err) {
@@ -89,7 +88,6 @@ class userController{
             const paginationUser = getAllUser.slice(start,end)
 
             res.status(200).json({
-                message: "Get User data Successful",
                 page: page,
                 totalUsers: countUser,
                 totalPage: totalPage,
@@ -156,7 +154,7 @@ class userController{
                 activity_info: `add new user ${create.name}`
             })
             res.status(201).json({
-                message: `Add New User ${create.name} Successful`,
+                message: `Successfully add user ${create.name} !`,
                 user: {
                     id: create.id,
                     uuid: create.uuid,
@@ -186,7 +184,6 @@ class userController{
             });
 
             res.status(200).json({
-              message: `Get User ${getUserId.name} details Successful`,
               user:getUserId
             })
         }catch(err){
@@ -231,7 +228,7 @@ class userController{
             activity_info: `delete user data ${getUser.name}`,
           });
           res.status(200).json({
-            message: `Deleted User ${getUser.name} Successful`,
+            message: `User deleted successfully`,
           });
         } catch (err) {
           res.status(401).json({
@@ -305,7 +302,7 @@ class userController{
                 activity_info: `edit user data ${getUser.name}`
             })
             res.status(200).json({
-                status: `Update Users ${getUser.name} Successful`,
+                status: `User updated successfully`,
                 user: {
                     id: editUser[1][0].id,
                     uuid: editUser[1][0].uuid,

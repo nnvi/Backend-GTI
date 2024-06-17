@@ -109,7 +109,6 @@ class ShipmentController{
                 const pageShipment = setresponse.slice(start,end)
 
                 res.status(200).json({
-                    message: "Get Shipments data Successful",
                     page: page,
                     totalShipment: countShipment,
                     totalPage: totalPage,
@@ -195,7 +194,7 @@ class ShipmentController{
                 activity_info: `Added Shipment ${create.number}`
             })
             res.status(201).json({
-                message:`Add Shipment ${create.number} Successfull`,
+                message:`Successfully add shipment ${create.number} !`,
                 Shipment: {
                     id: create.id,
                     uuid: create.uuid,
@@ -249,7 +248,6 @@ class ShipmentController{
             const containerNumbers = getshipmentdetail.map(detail => detail.container.number);
 
             res.status(200).json({
-                message:`Get Shipment ${shipmentInfo.number} details Successful`,
                 shipment:{
                     container_number: containerNumbers,
                     uuid: shipmentInfo.uuid,
@@ -320,7 +318,7 @@ class ShipmentController{
             })
             
             res.status(200).json({
-                message: `Delete Shipment ${getShipment.number} Successful`
+                message: `Shipment deleted successfully !`
             })
 
         }catch(err){
@@ -426,7 +424,7 @@ class ShipmentController{
                 activity_info: `Updated Shipment ${editShipment[1][0].number}`
             })
             res.status(200).json({
-                status: `Update Shipments ${editShipment[1][0].number} Successful`,
+                status: `Shipment updated successfully !`,
                 Shipment: {
                     id: editShipment[1][0].id,
                     uuid: editShipment[1][0].uuid,

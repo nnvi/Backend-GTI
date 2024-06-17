@@ -64,7 +64,6 @@ class containerController{
             } else {
                 const pageContainer = getAllContainer.slice(start,end)
                 res.status(200).json({
-                    message: "Get Container data Successful",
                     page: page,
                     totalContainer: countCont,
                     totalPage: totalPage,
@@ -109,7 +108,7 @@ class containerController{
             })
 
             res.status(201).json({
-                message: `Add New Container ${create.number} Successful`,
+                message: `Successfully add container ${create.number} !`,
                 container: {
                     id: create.id,
                     uuid: create.uuid,
@@ -184,7 +183,6 @@ class containerController{
                 shipper: (!getShipmentData?null: getShipmentData[0].shipper)
                 }
             res.status(200).json({
-                message: `Get Container ${getcontainerId.number} details Successful`,
                 container:setResponse
             })
         }catch(err){
@@ -213,7 +211,7 @@ class containerController{
                 activity_info: `Deleted Container ${getCont.number}`
             })
             res.status(200).json({
-                message: `Deleted Container ${getCont.number} Successful`
+                message: `Container deleted successfully !`
             })
 
         }catch(err){
@@ -239,8 +237,16 @@ class containerController{
                 where:{uuid: uuid},
                 returning: true
             })
+            
+            const EditContLog = await log_activity.create({
+                user_id: req.UserData.id,
+                shipment_id: null,
+                repair_id: null,
+                activity_info: `Edited container data ${editcontainer[1][0].number}`
+            })
+
             res.status(200).json({
-                status: `Update Containers ${editcontainer[1][0].number} Successful`,
+                status: `Container updated successfully`,
                 container: {
                     id: editcontainer[1][0].id,
                     uuid : editcontainer[1][0].uuid,
@@ -250,12 +256,6 @@ class containerController{
                     iddle_days: editcontainer[1][0].iddle_days,
                     type: editcontainer[1][0].type
                 }
-            })
-            const EditContLog = await log_activity.create({
-                user_id: req.UserData.id,
-                shipment_id: null,
-                repair_id: null,
-                activity_info: `Edited container data ${editcontainer[1][0].number}`
             })
         }catch(err){
             res.status(402).json({
@@ -274,7 +274,6 @@ class containerController{
                 attributes:['number','age','location','type']
             })
             res.status(200).json({
-                message: "List Container Ready",
                 container: ready
             })
         }catch(err){
@@ -344,7 +343,6 @@ class containerController{
                 ETD:history.shipment.shipment_detail.ETD
             }))
             res.status(200).json({
-                message:`List Shipment Container ${cont_id.number}`,
                 history: responseHistory
             })
         }catch(err){
@@ -361,7 +359,6 @@ class containerController{
             });
             const location = getLocation.map(item=>item.location)
             res.status(200).json({
-                message:`Get List of Container Location`,
                 location: [...new Set(location)]
             });
         } catch (err) {
