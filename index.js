@@ -1,4 +1,5 @@
 require('dotenv').config()
+require('./controllers/cronJobs.js'); 
 const express = require('express')
 const router = require('./routers/route.js')
 const cors = require('cors')

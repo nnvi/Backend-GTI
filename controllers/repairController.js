@@ -1,7 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const { repair, container, log_activity, sequelize, Sequelize } = require('../models')
 const path = require('path');
-const fs = require('fs');
+const sharp = require('sharp');
 const ExcelJS = require('exceljs');
 const cloudinary = require('../middlewares/cloudinary')
 
@@ -98,10 +98,10 @@ class RepairController {
                 },
             })
             if (!cont_id) {
-                throw {
+                return res.status(500).json({
                     code: 500,
-                    message: "container not found"
-                }
+                    message: "Container not found"
+                })
             }
 
             if (cont_id.status == "Repair") {
@@ -111,16 +111,28 @@ class RepairController {
             }
             let result = {}
             if (req.file != null || req.file != undefined) {
-                result = await cloudinary.uploader.upload(req.file.path, { folder: "repair_picture" }, function (err, result) {
-                    if (err) {
-                        console.log(err);
-                        return res.status(500).json({
-                            status: "failed upload pictures",
-                            message: err
-                        })
+                const inputPath = req.file.path;
+                const outputPath = path.join(__dirname, 'resized-' + req.file.filename);
+
+                try {
+                    const metadata = await sharp(inputPath).metadata();
+
+                    if (metadata.width > 800 || metadata.height > 600) {
+                        await sharp(inputPath)
+                            .resize(800, 600, {
+                                fit: 'inside'})
+                            .toFile(outputPath);
+
+                        result = await cloudinary.uploader.upload(outputPath, { folder: "repair_picture" });
+                    } else {
+                        result = await cloudinary.uploader.upload(inputPath, { folder: "repair_picture" });
                     }
-                    return result
-                });
+                } catch (err) {
+                    return res.status(500).json({
+                        message: "Failed to process and upload picture",
+                        error: err.message
+                    });
+                }
             } else {
                 result = null
             }
@@ -165,7 +177,7 @@ class RepairController {
                 where: {
                     uuid: uuid
                 },
-                attributes: ['id', 'uuid', 'remarks', 'createdAt', 'image','finish'],
+                attributes: ['id', 'uuid', 'remarks', 'createdAt', 'image', 'finish'],
                 include: [{
                     model: container,
                     attributes: ['uuid', 'number', 'age', 'location', 'type']
@@ -173,7 +185,6 @@ class RepairController {
             })
             if (!getrepairId) {
                 return res.status(404).json({
-                    status: "failed",
                     message: "Repair not found"
                 });
             }
@@ -183,7 +194,7 @@ class RepairController {
                 remarks: getrepairId.remarks,
                 image: getrepairId.image,
                 createdAt: getrepairId.createdAt,
-                finish:getrepairId.finish,
+                finish: getrepairId.finish,
                 container_uuid: getrepairId.container.uuid,
                 number: getrepairId.container.number,
                 type: getrepairId.container.type,
@@ -217,20 +228,16 @@ class RepairController {
 
             if (!getRepair) {
                 return res.status(404).json({
-                    status: "failed",
                     message: "Repair not found"
                 });
             }
 
             if (getRepair.image != null) {
-
                 const imageName = `repair_picture/${getRepair.image.split('/').pop().split('.')[0]}`;
                 await cloudinary.uploader.destroy(imageName, function (err, result) {
                     if (err) {
-                        console.log(err);
                         return res.status(500).json({
-                            status: "failed to delete old picture",
-                            message: err
+                            message: "failed to delete old picture"
                         });
                     }
                 });
@@ -279,7 +286,6 @@ class RepairController {
             });
             if (!getRepair) {
                 return res.status(404).json({
-                    status: "failed",
                     message: "Repair not found"
                 });
             }
@@ -290,25 +296,34 @@ class RepairController {
                     const imageName = `repair_picture/${getRepair.image.split('/').pop().split('.')[0]}`;
                     await cloudinary.uploader.destroy(imageName, function (err, result) {
                         if (err) {
-                            console.log(err);
                             return res.status(500).json({
-                                status: "failed to delete old picture",
-                                message: err
+                                message: "failed to delete old picture"
                             });
                         }
                     });
                 }
+                const inputPath = req.file.path;
+                const outputPath = path.join(__dirname, 'resized-' + req.file.filename);
 
-                result = await cloudinary.uploader.upload(req.file.path, { folder: "repair_picture" }, function (err, result) {
-                    if (err) {
-                        console.log(err);
-                        return res.status(500).json({
-                            status: "failed upload picture",
-                            message: err
-                        });
+                try {
+                    const metadata = await sharp(inputPath).metadata();
+
+                    if (metadata.width > 800 || metadata.height > 600) {
+                        await sharp(inputPath)
+                            .resize(800, 600, {
+                                fit: 'inside'})
+                            .toFile(outputPath);
+
+                        result = await cloudinary.uploader.upload(outputPath, { folder: "repair_picture" });
+                    } else {
+                        result = await cloudinary.uploader.upload(inputPath, { folder: "repair_picture" });
                     }
-                    return result;
-                });
+                } catch (err) {
+                    return res.status(500).json({
+                        message: "Failed to process and upload picture",
+                        error: err.message
+                    });
+                }
             } else {
                 result = null;
             }
@@ -333,10 +348,9 @@ class RepairController {
                     }
                 })
                 if (cont_id.status != "Ready") {
-                    throw {
-                        code: 401,
+                    return res.status(401).json({
                         message: `container ${number} status ${cont_id.status}, please choose another container`
-                    }
+                    })
                 }
             }
             const updateCont = await container.update({
@@ -362,7 +376,7 @@ class RepairController {
                 activity_info: `edit repair container ${editRepair[1][0].id}`
             })
             res.status(200).json({
-                status: `Repair updated Successfully !`,
+                message: `Repair updated Successfully !`,
                 repair: {
                     number: cont_id.number,
                     remarks: editRepair[1][0].remarks,
@@ -387,7 +401,6 @@ class RepairController {
             });
             if (!getRepair) {
                 return res.status(404).json({
-                    status: "failed",
                     message: "Repair not found"
                 });
             }
@@ -435,7 +448,6 @@ class RepairController {
             })
             if (!getRepair) {
                 return res.status(404).json({
-                    status: "failed",
                     message: "Repair not found"
                 });
             }

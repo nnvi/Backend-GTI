@@ -84,10 +84,10 @@ class containerController{
                 where:{number: number}
             })
             if(checkCont!=null){
-                throw{
+                return res.status(401).json({
                     code: 401,
                     message: "Container number recorded, Please enter another number"
-                }
+                })
             }
             const create = await container.create({
                 uuid: uuidv4(),
@@ -123,7 +123,7 @@ class containerController{
             })
         }catch(err){
             res.status(500).json({
-                message: err
+                message: err.message
             })
         }
     }
@@ -198,10 +198,10 @@ class containerController{
             const {uuid}= req.params
             const getCont = await container.findOne({where:{uuid:uuid},attributes:['number','status']})
             if(getCont.status != "Ready"){
-                throw{
+                return res.status(401).json({
                     code: 401,
                     message:`Container currently ${getCont.status}, Can't Delete this data`
-                }
+                })
             }
             const deletecontainer = await container.destroy({where:{uuid:uuid}})
             const delContainerLog = await log_activity.create({
@@ -216,7 +216,7 @@ class containerController{
 
         }catch(err){
             res.status(401).json({
-                message:err
+                message:err.message
             })
         }
     }
@@ -246,7 +246,7 @@ class containerController{
             })
 
             res.status(200).json({
-                status: `Container updated successfully`,
+                message: `Container updated successfully`,
                 container: {
                     id: editcontainer[1][0].id,
                     uuid : editcontainer[1][0].uuid,
@@ -259,7 +259,7 @@ class containerController{
             })
         }catch(err){
             res.status(402).json({
-                message:err
+                message:err.message
             })
         }
     }
@@ -278,7 +278,7 @@ class containerController{
             })
         }catch(err){
             res.status(500).json({
-                message:err
+                message:err.message
             })
         }
     }
@@ -311,7 +311,7 @@ class containerController{
             })
         }catch(err){
             res.status(500).json({
-                message:err
+                message:err.message
             })
         }
     }

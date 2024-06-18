@@ -136,28 +136,28 @@ class ShipmentController{
             })
 
             if (cont_id.length !== container_number.length) {
-                throw {
+                return res.status(400).json ({
                     code: 400,
                     message: "One or more container numbers are not found in the database."
-                };
+                });
             }
 
             const checkShip = await shipment.findOne({
                 where:{number: number}
             })
             if(checkShip!=null){
-                throw{
+                return res.status(401).json({
                     code: 401,
                     message: "Shipment number recorded, Please enter another number"
-                }
+                })
             }
             
             cont_id.forEach(container => { 
                 if(container.status!= "Ready"){
-                    throw{
+                    return res.status(401).json({
                         code:401,
                         message:`container ${container.number} status ${container.status}, please choose another container`
-                    }
+                    })
                 }                
             });
 
@@ -278,10 +278,10 @@ class ShipmentController{
                 attributes:['number','id','active_status']
             })
             if(getShipment ==null || getShipment.active_status==false){
-                throw{
+                return res.status(401).json({
                     code: 401,
                     message: (getShipment==null?`${uuid} not found`:`${getShipment.number} not found`)
-                }
+                })
             }
 
             const getDataContainer = await shipment_containers.findAll({
@@ -322,8 +322,8 @@ class ShipmentController{
             })
 
         }catch(err){
-            res.status(401).json({
-                message:err
+            res.status(500).json({
+                message:err.message
             })
         }
     }
