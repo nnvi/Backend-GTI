@@ -31,9 +31,11 @@ class containerController{
 
             const getAllContainer=await container.findAll({
                 attributes:{exclude:['user_id','createdAt','updatedAt']},
-                where: whereClause
+                where: whereClause,
+                order: [
+                    ['number', 'ASC']
+                ]
             })
-            getAllContainer.sort((a, b) => a.id - b.id);
 
             if (exportData) {
                 const workbook = new ExcelJS.Workbook();

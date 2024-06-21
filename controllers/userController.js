@@ -3,8 +3,6 @@ const { generateToken } = require("../helpers/jwt")
 const { comparePassword, hashPassword } = require('../helpers/bcrypt')
 const { users, log_activity } = require('../models')
 const cloudinary = require('../middlewares/cloudinary')
-const sharp = require('sharp');
-const path = require('path');
 
 class userController {
   //user login

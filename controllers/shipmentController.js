@@ -54,9 +54,11 @@ class ShipmentController{
                 },{
                     model:users,
                     attributes:['location']
-                }]
+                }],
+                order: [
+                    ['createdAt', 'DESC']
+                ]
             })
-            getAllShipment.sort((a, b) => a.createdAt - b.createdAt);
             
             const setresponse = getAllShipment.map(shipment=>({
                 id: shipment.id,
@@ -140,6 +142,18 @@ class ShipmentController{
                     code: 400,
                     message: "One or more container numbers are not found in the database."
                 });
+            }else if (stuffing_date > ETD){
+                return res.status(500).json({
+                    message:`Stuffing date must same or below ETD Date !`
+                })
+            }else if (ETA < ETD){
+                return res.status(500).json({
+                    message:`ETA date must same or above ETD Date !`
+                })
+            }else if(status=="Pickup" && remark_description==null){
+                return res.status(400).json({
+                    message:"Missing remark data !"
+                })
             }
 
             const checkShip = await shipment.findOne({
@@ -334,6 +348,19 @@ class ShipmentController{
             const {number,container_number, status,POL, POD, ETD, ETA, stuffing_date, shipper, remark_description} = req.body
             const {uuid} = req.params
             
+            if(status=="Pickup" || status=="Accident"){
+                return res.status(400).json({
+                    message:"Missing remark data !"
+                })
+            }else if (stuffing_date > ETD){
+                return res.status(500).json({
+                    message:`Stuffing date must same or below ETD Date !`
+                })
+            }else if (ETA < ETD){
+                return res.status(500).json({
+                    message:`ETA date must same or above ETD Date !`
+                })
+            }
             const getShipment = await shipment.findOne({
                 where:{uuid:uuid},
                 attributes:['id','shipment_detail_id']
@@ -424,7 +451,7 @@ class ShipmentController{
                 activity_info: `Updated Shipment ${editShipment[1][0].number}`
             })
             res.status(200).json({
-                message: `Shipment updated successfully !`,
+                status: `Shipment updated successfully !`,
                 Shipment: {
                     id: editShipment[1][0].id,
                     uuid: editShipment[1][0].uuid,

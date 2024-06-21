@@ -1,5 +1,5 @@
 const { where, Op } = require('sequelize')
-const {log_activity,users}= require('../models')
+const {log_activity,users, Sequelize}= require('../models')
 
 class LogActivityController{
     //get all LogActivity
@@ -16,15 +16,17 @@ class LogActivityController{
             let whereClause = {};
             if (checkDate.test(search)) {
                 whereClause = {
-                    createdAt: {
-                        [Op.between]: [new Date(search), new Date(new Date(search).getTime() + 86400000)] // Assuming search represents a single day
-                    }
-                };
+                    [Op.or]:[
+                        {createdAt: { [Op.between]: [new Date(search), new Date(new Date(search).getTime() + 86400000)]}},
+                        {activity_info:{[Op.like]:`%${search}%`}}
+                    ]
+                }
             } else {
                 whereClause = {
-                    '$user.name$': {
-                        [Op.like]: `%${search}%`
-                    }
+                    [Op.or]:[
+                        {'$user.name$': {[Op.like]: `%${search}%`}},
+                        {activity_info:{[Op.like]:`%${search}%`}}
+                    ]
                 };
             }
             const countLog = await log_activity.count({
@@ -38,7 +40,9 @@ class LogActivityController{
                     model: users,
                     attributes:['name']
                 },
-                where:whereClause
+                where:whereClause,order: [
+                    ['createdAt', 'DESC']
+                ]
             })
             const paginationLog = getAllLogActivity.slice(start,end)
 

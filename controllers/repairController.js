@@ -1,7 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-const { repair, container, log_activity, sequelize, Sequelize } = require('../models')
-const path = require('path');
-const sharp = require('sharp');
+const { repair, container, log_activity, Sequelize } = require('../models')
 const ExcelJS = require('exceljs');
 const cloudinary = require('../middlewares/cloudinary')
 
@@ -28,9 +26,10 @@ class RepairController {
                     model: container,
                     attributes: ['number', 'type', 'location', 'age']
                 }, container],
+                order: [
+                    ['createdAt', 'DESC']
+                ]
             })
-            getAllRepair.sort((a, b) => b.createdAt - a.createdAt);
-
             const setresponse = getAllRepair.map(repair => ({
                 id: repair.id,
                 uuid: repair.uuid,
@@ -48,11 +47,11 @@ class RepairController {
                 const worksheet = workbook.addWorksheet('repairs');
 
                 worksheet.columns = [
-                    { header: 'Remarks', key: 'remarks', width: 15 },
                     { header: 'Container_Number', key: 'container_number', width: 15 },
                     { header: 'Container_Type', key: 'container_type', width: 15 },
                     { header: 'Container_Location', key: 'container_location', width: 15 },
                     { header: 'Container_Age', key: 'container_age', width: 10 },
+                    { header: 'Remarks', key: 'remarks', width: 15 },
                     { header: 'Finish_Status', key: 'finish_status', width: 10 },
                     { header: 'CreatedAt', key: 'createdAt', width: 10 }
                 ];
@@ -64,7 +63,7 @@ class RepairController {
                         container_type: value.container.type,
                         container_location: value.container.location,
                         container_age: value.container.age,
-                        finish_status: value.finish,
+                        finish_status: value.finish? "Finished":"On Progress",
                         createdAt: value.createdAt
                     })
                 })
