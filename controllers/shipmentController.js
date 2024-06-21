@@ -424,7 +424,7 @@ class ShipmentController{
                 activity_info: `Updated Shipment ${editShipment[1][0].number}`
             })
             res.status(200).json({
-                status: `Shipment updated successfully !`,
+                message: `Shipment updated successfully !`,
                 Shipment: {
                     id: editShipment[1][0].id,
                     uuid: editShipment[1][0].uuid,
