@@ -111,28 +111,16 @@ class RepairController {
             }
             let result = {}
             if (req.file != null || req.file != undefined) {
-                const inputPath = req.file.path;
-                const outputPath = path.join(__dirname, 'resized-' + req.file.filename);
-
-                try {
-                    const metadata = await sharp(inputPath).metadata();
-
-                    if (metadata.width > 800 || metadata.height > 600) {
-                        await sharp(inputPath)
-                            .resize(800, 600, {
-                                fit: 'inside'})
-                            .toFile(outputPath);
-
-                        result = await cloudinary.uploader.upload(outputPath, { folder: "repair_picture" });
-                    } else {
-                        result = await cloudinary.uploader.upload(inputPath, { folder: "repair_picture" });
+                result = await cloudinary.uploader.upload(req.file.path, { folder: "repair_picture" }, function (err, result) {
+                    if (err) {
+                        console.log(err);
+                        return res.status(500).json({
+                            status: "failed upload pictures",
+                            message: err
+                        })
                     }
-                } catch (err) {
-                    return res.status(500).json({
-                        message: "Failed to process and upload picture",
-                        error: err.message
-                    });
-                }
+                    return result
+                });
             } else {
                 result = null
             }
@@ -302,28 +290,16 @@ class RepairController {
                         }
                     });
                 }
-                const inputPath = req.file.path;
-                const outputPath = path.join(__dirname, 'resized-' + req.file.filename);
-
-                try {
-                    const metadata = await sharp(inputPath).metadata();
-
-                    if (metadata.width > 800 || metadata.height > 600) {
-                        await sharp(inputPath)
-                            .resize(800, 600, {
-                                fit: 'inside'})
-                            .toFile(outputPath);
-
-                        result = await cloudinary.uploader.upload(outputPath, { folder: "repair_picture" });
-                    } else {
-                        result = await cloudinary.uploader.upload(inputPath, { folder: "repair_picture" });
+                result = await cloudinary.uploader.upload(req.file.path, { folder: "repair_picture" }, function (err, result) {
+                    if (err) {
+                        console.log(err);
+                        return res.status(500).json({
+                            status: "failed upload picture",
+                            message: err
+                        });
                     }
-                } catch (err) {
-                    return res.status(500).json({
-                        message: "Failed to process and upload picture",
-                        error: err.message
-                    });
-                }
+                    return result;
+                });
             } else {
                 result = null;
             }
