@@ -117,29 +117,16 @@ class userController {
       }
       let result = {}
       if (req.file != null || req.file != undefined) {
-        const inputPath = req.file.path;
-        const outputPath = path.join(__dirname, 'resized-' + req.file.filename);
-
-        try {
-          const metadata = await sharp(inputPath).metadata();
-
-          if (metadata.width > 800 || metadata.height > 600) {
-            await sharp(inputPath)
-              .resize(800, 600, {
-                fit: 'inside'
-              })
-              .toFile(outputPath);
-
-            result = await cloudinary.uploader.upload(outputPath, { folder: "profile_pictures" });
-          } else {
-            result = await cloudinary.uploader.upload(inputPath, { folder: "profile_pictures" });
-          }
-        } catch (err) {
-          return res.status(500).json({
-            message: "Failed to process and upload picture",
-            error: err.message
-          });
-        }
+        result = await cloudinary.uploader.upload(req.file.path,{folder: "profile_pictures"},function(err,result){
+                    if(err){
+                        console.log(err);
+                        return res.status(500).json({
+                            status: "failed upload pictures",
+                            message: err
+                        })
+                    }
+                    return result
+                });
       } else {
         result = null
       }
@@ -279,29 +266,16 @@ class userController {
           });
         }
 
-        const inputPath = req.file.path;
-        const outputPath = path.join(__dirname, 'resized-' + req.file.filename);
-
-        try {
-          const metadata = await sharp(inputPath).metadata();
-
-          if (metadata.width > 800 || metadata.height > 600) {
-            await sharp(inputPath)
-              .resize(800, 600, {
-                fit: 'inside'
-              })
-              .toFile(outputPath);
-
-            result = await cloudinary.uploader.upload(outputPath, { folder: "profile_pictures" });
-          } else {
-            result = await cloudinary.uploader.upload(inputPath, { folder: "profile_pictures" });
-          }
-        } catch (err) {
-          return res.status(500).json({
-            message: "Failed to process and upload picture",
-            error: err.message
-          });
-        }
+        result = await cloudinary.uploader.upload(req.file.path, {folder: "profile_pictures"}, function(err, result) {
+                if (err) {
+                  console.log(err);
+                  return res.status(500).json({
+                    status: "failed upload picture",
+                    message: err
+                  });
+                }
+                return result;
+              });
       } else {
         result = null;
       }
