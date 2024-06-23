@@ -12,10 +12,14 @@
     {
       "src": "/(.*)",
       "dest": "index.js"
+    },
+    {
+      "src": "/cron",
+      "dest": "/controllers/cronJobController.js"
     }
   ],
   "crons": [{
     "path": "/cron",
-    "schedule": "5 * * * *"
+    "schedule": "00 17 * * *"
   }]
 }
