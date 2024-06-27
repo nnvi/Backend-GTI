@@ -349,7 +349,7 @@ class ShipmentController{
             const {uuid} = req.params
             
             if(status=="Pickup" || status=="Accident"){
-                if(remark_description == null){
+                if(remark_description == null ||remark_description == ""){
                     return res.status(400).json({
                         message:"Missing remark data !"
                     })   
