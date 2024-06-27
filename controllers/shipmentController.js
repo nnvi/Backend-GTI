@@ -56,8 +56,7 @@ class ShipmentController{
                     attributes:['location']
                 }],
                 order: [
-                    ['createdAt', 'DESC'],
-                    [Sequelize.literal('CASE WHEN status = "return" THEN 1 ELSE 0 END'), 'ASC']
+                    ['createdAt', 'DESC']
                 ]
             })
             
@@ -195,7 +194,8 @@ class ShipmentController{
             
             cont_id.forEach(async container=>{
                 const updateCont =await container.update({
-                    status:"In-Use"
+                    status:"In-Use",
+                    iddle_days: 0
                 },{
                     where:{
                         id:container.id
