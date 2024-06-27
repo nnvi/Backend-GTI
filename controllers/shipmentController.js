@@ -483,15 +483,20 @@ class ShipmentController{
             const dashboardShipment = await shipment.findAll({
                 where:{
                     active_status:true,
-                    createdAt: {
+                    '$shipment_detail.ETD$': {
                         [Op.between]: [startDate, endDate]
                     }
                 },
                 attributes: ['id','number'],
-                include:{
+                include:[{
                     model:users,
                     attributes:['id','location']
+                },
+                {
+                    model:shipment_detail,
+                    attributes:['ETD']
                 }
+            ]
             })
             function ShipmentsByLocation(data, location) {
                 return data.filter(item => item.user.location === location).length;
