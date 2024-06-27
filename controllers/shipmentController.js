@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-const {shipment,container,shipment_detail,users, log_activity,shipment_containers}= require('../models');
+const {shipment,container,shipment_detail,users, log_activity,shipment_containers, Sequelize}= require('../models');
 const { Op } = require('sequelize');
 const ExcelJS = require('exceljs');
 
@@ -56,7 +56,8 @@ class ShipmentController{
                     attributes:['location']
                 }],
                 order: [
-                    ['createdAt', 'DESC']
+                    ['createdAt', 'DESC'],
+                    [Sequelize.literal('CASE WHEN status = "return" THEN 1 ELSE 0 END'), 'ASC']
                 ]
             })
             
@@ -134,7 +135,7 @@ class ShipmentController{
                 where:{
                     number: container_number
                 },
-                attributes:['id','number','status']
+                attributes:['id','number','status','location']
             })
 
             if (cont_id.length !== container_number.length) {

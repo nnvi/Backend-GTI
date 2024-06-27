@@ -27,7 +27,8 @@ class RepairController {
                     attributes: ['number', 'type', 'location', 'age']
                 }, container],
                 order: [
-                    ['createdAt', 'DESC']
+                    ['createdAt', 'DESC'],
+                    ['finish','DESC']
                 ]
             })
             const setresponse = getAllRepair.map(repair => ({
