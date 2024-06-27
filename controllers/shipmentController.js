@@ -477,9 +477,15 @@ class ShipmentController{
 
     static async getShipmentDashboard(req,res){
         try{
+            const now = new Date();
+            const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
             const dashboardShipment = await shipment.findAll({
                 where:{
-                    active_status:true
+                    active_status:true,
+                    createdAt: {
+                        [Op.between]: [startDate, endDate]
+                    }
                 },
                 attributes: ['id','number'],
                 include:{
