@@ -348,7 +348,7 @@ class ShipmentController{
             const {number,container_number, status,POL, POD, ETD, ETA, stuffing_date, shipper, remark_description} = req.body
             const {uuid} = req.params
             
-            if((status=="Pickup" || status=="Accident") && remark_description==null){
+            if(status=="Pickup" || status=="Accident" && remark_description==null){
                 return res.status(400).json({
                     message:"Missing remark data !"
                 })
