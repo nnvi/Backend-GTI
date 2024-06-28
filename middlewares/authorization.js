@@ -38,4 +38,4 @@ function ContAuthorization(req,res,next){
     })}
 }
 
-module.exports= {userAuthorization,ContAuthorization}
+module.exports= userAuthorization,ContAuthorization
