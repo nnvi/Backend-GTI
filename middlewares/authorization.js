@@ -8,7 +8,7 @@ function userAuthorization(req,res,next){
             if (result.role !=="Super Admin"){
                 return res.status(403).json({
                     error: "Authorization Error",
-                    Message: `You don't have access to this feature!`,
+                    message: `You don't have access to this feature!`,
                 })
             }else{
                 next()
@@ -27,7 +27,7 @@ function ContAuthorization(req,res,next){
             if(result.role ==="Operasional"){
                 return res.status(403).json({
                     error: "Authorization Error",
-                    Message: `You don't have access to this feature!`,
+                    message: `You don't have access to this feature!`,
                 })
             }else{
                 next()
