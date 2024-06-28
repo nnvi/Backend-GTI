@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const {addShipment, getShipment, getShipmentbyUuid, deleteShipment, editShipment, getShipmentDashboard} = require('../controllers/shipmentController')
-const {ContAuthorization} = require('../middlewares/authorization')
+const ContAuthorization = require('../middlewares/authorization')
 
 router.get('/shipments',getShipment)
 router.get('/shipments/dashboard', getShipmentDashboard)
