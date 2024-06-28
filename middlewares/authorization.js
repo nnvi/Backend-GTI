@@ -28,6 +28,7 @@ function ContAuthorization(req,res,next){
                 return res.status(403).json({
                     error: "Authorization Error",
                     message: `You don't have access to this feature!`,
+                    role: result.role
                 })
             }else{
                 next()
