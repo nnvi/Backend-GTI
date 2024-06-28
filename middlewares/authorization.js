@@ -24,7 +24,12 @@ function ContAuthorization(req,res,next){
         const data = req.UserData
         users.findByPk(data.id)
         .then((result)=>{
-            if (result.role !=="Super Admin" || result.role !=="Customer Service"){
+            if (result.role !=="Super Admin"){
+                return res.status(403).json({
+                    error: "Authorization Error",
+                    Message: `You don't have access to this feature!`,
+                })
+            }else if (result.role !=="Customer Service"){
                 return res.status(403).json({
                     error: "Authorization Error",
                     Message: `You don't have access to this feature!`,
