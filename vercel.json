@@ -15,7 +15,7 @@
     },
     {
       "src": "/cron",
-      "dest": "/controllers/cronJobController.js"
+      "dest": "/controllers/cronJobs.js"
     }
   ],
   "crons": [{
