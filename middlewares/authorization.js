@@ -15,7 +15,7 @@ function userAuthorization(req,res,next){
             }
         })
     }catch{((err) => {
-        return res.status(504).json(err)        
+        return res.status(504).json(err.message)        
     })}
 }
 
@@ -34,7 +34,7 @@ function ContAuthorization(req,res,next){
             }
         })
     }catch{((err) => {
-        return res.status(500).json(err)        
+        return res.status(500).json(err.message)        
     })}
 }
 
