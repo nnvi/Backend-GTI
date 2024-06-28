@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const {addUser, getUser, getUserbyUuid, deleteUser, EditUser, login, currentUser} = require('../controllers/userController')
+const {addUser, getUser, getUserbyUuid, deleteUser, EditUser} = require('../controllers/userController')
 const {userAuthorization} = require('../middlewares/authorization')
 const upload = require('../middlewares/multer')
 
