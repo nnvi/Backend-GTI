@@ -27,8 +27,7 @@ function ContAuthorization(req,res,next){
             if(result.role !=="Super Admin" || result.role !=="Customer Service"){
                 return res.status(403).json({
                     error: "Authorization Error",
-                    message: `You don't have access to this feature!`,
-                    role: result.role
+                    message: `You don't have access to this feature!, your role ${result.role}`
                 })
             }else{
                 next()
