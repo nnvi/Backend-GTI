@@ -2,7 +2,8 @@ const { v4: uuidv4 } = require('uuid');
 const { generateToken } = require("../helpers/jwt")
 const { comparePassword, hashPassword } = require('../helpers/bcrypt')
 const { users, log_activity } = require('../models')
-const cloudinary = require('../middlewares/cloudinary')
+const cloudinary = require('../middlewares/cloudinary');
+const { where } = require('sequelize');
 
 class userController {
   //user login
@@ -78,10 +79,17 @@ class userController {
       const end = page * pageSize
 
       const countUser = await users.count()
+      const getUser = await users.findOne({
+        where:{id:req.UserData.id},
+        attributes:['location']
+    })
       const totalPage = (countUser % pageSize != 0 ? (Math.floor(countUser / pageSize)) + 1 : (Math.floor(countUser / pageSize)))
 
       const getAllUser = await users.findAll({
         attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'role', 'location', 'user_image'] },
+        where:{
+          location: getUser.location
+        }
       })
       getAllUser.sort((a, b) => a.id - b.id);
       const paginationUser = getAllUser.slice(start, end)

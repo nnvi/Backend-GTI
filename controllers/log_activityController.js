@@ -14,8 +14,14 @@ class LogActivityController{
             const checkDate = /^\d{4}-\d{2}-\d{2}$/;
 
             let whereClause = {};
+            const getUser = await users.findOne({
+                where:{id:req.UserData.id},
+                attributes:['location']
+            })
+
             if (checkDate.test(search)) {
                 whereClause = {
+                    '$user.name$': getUser.location,
                     [Op.or]:[
                         {createdAt: { [Op.between]: [new Date(search), new Date(new Date(search).getTime() + 86400000)]}},
                         {activity_info:{[Op.like]:`%${search}%`}}
@@ -23,6 +29,7 @@ class LogActivityController{
                 }
             } else {
                 whereClause = {
+                    '$user.name$': getUser.location,
                     [Op.or]:[
                         {'$user.name$': {[Op.like]: `%${search}%`}},
                         {activity_info:{[Op.like]:`%${search}%`}}
@@ -38,7 +45,7 @@ class LogActivityController{
                 attributes:['id','user_id','activity_info','createdAt'],
                 include:{
                     model: users,
-                    attributes:['name']
+                    attributes:['name','location']
                 },
                 where:whereClause,order: [
                     ['createdAt', 'DESC']
