@@ -11,31 +11,19 @@ class LogActivityController{
             const end = page*pageSize
             const search = req.query.search || ''
 
-            const checkDate = /^\d{4}-\d{2}-\d{2}$/;
-
             let whereClause = {};
             const getUser = await users.findOne({
                 where:{id:req.UserData.id},
                 attributes:['location']
             })
-
-            if (checkDate.test(search)) {
-                whereClause = {
-                    '$user.location$': getUser.location,
-                    [Op.or]:[
-                        {createdAt: { [Op.between]: [new Date(search), new Date(new Date(search).getTime() + 86400000)]}},
-                        {activity_info:{[Op.like]:`%${search}%`}}
-                    ]
-                }
-            } else {
-                whereClause = {
-                    '$user.location$': getUser.location,
-                    [Op.or]:[
-                        {'$user.name$': {[Op.like]: `%${search}%`}},
-                        {activity_info:{[Op.like]:`%${search}%`}}
-                    ]
-                };
-            }
+            whereClause = {
+                '$user.location$': getUser.location,
+                [Op.or]:[
+                    {'$user.name$': {[Op.like]: `%${search}%`}},
+                    {activity_info:{[Op.like]: `%${search}%`}}
+                ]
+            };
+            
             const countLog = await log_activity.count({
                 where:whereClause,
                 include:[users]
