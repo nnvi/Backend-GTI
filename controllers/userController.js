@@ -77,12 +77,14 @@ class userController {
       const pageSize = 5
       const start = (page - 1) * pageSize
       const end = page * pageSize
-
-      const countUser = await users.count()
       const getUser = await users.findOne({
         where:{id:req.UserData.id},
         attributes:['location']
-    })
+      })
+      const countUser = await users.count({where: {
+        location: getUser.location
+      }})
+      
       const totalPage = (countUser % pageSize != 0 ? (Math.floor(countUser / pageSize)) + 1 : (Math.floor(countUser / pageSize)))
 
       const getAllUser = await users.findAll({

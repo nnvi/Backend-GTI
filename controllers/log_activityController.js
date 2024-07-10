@@ -21,7 +21,7 @@ class LogActivityController{
 
             if (checkDate.test(search)) {
                 whereClause = {
-                    '$user.name$': getUser.location,
+                    '$user.location$': getUser.location,
                     [Op.or]:[
                         {createdAt: { [Op.between]: [new Date(search), new Date(new Date(search).getTime() + 86400000)]}},
                         {activity_info:{[Op.like]:`%${search}%`}}
@@ -29,7 +29,7 @@ class LogActivityController{
                 }
             } else {
                 whereClause = {
-                    '$user.name$': getUser.location,
+                    '$user.location$': getUser.location,
                     [Op.or]:[
                         {'$user.name$': {[Op.like]: `%${search}%`}},
                         {activity_info:{[Op.like]:`%${search}%`}}
