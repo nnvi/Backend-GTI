@@ -18,10 +18,10 @@ class LogActivityController{
             })
             whereClause = {
                 '$user.location$': getUser.location,
-                [Op.or]:[
-                    {'$user.name$': {[Op.like]: `%${search}%`}},
-                    {activity_info:{[Op.like]: `%${search}%`}}
-                ]
+                // [Op.or]:[
+                    '$user.name$': {[Op.like]: `%${search}%`},
+                    activity_info :{[Op.like]: `%${search}%`}
+                // ]
             };
             
             const countLog = await log_activity.count({
