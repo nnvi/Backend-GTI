@@ -83,7 +83,7 @@ class containerController{
         try{
             const {number, age, location, iddle_days, type} = req.body
 
-            if(number==null){
+            if(number==null || number==""){
                 return res.status(400).json({
                     message:"Please enter location!"
                 })
@@ -234,7 +234,7 @@ class containerController{
         try{
             const {number, age, location, iddle_days, type} = req.body
             const {uuid} = req.params
-            if(number==null){
+            if(number==null|| number==""){
                 return res.status(400).json({
                     message:"Please enter location!"
                 })
