@@ -82,6 +82,12 @@ class containerController{
     static async addContainer(req,res){
         try{
             const {number, age, location, iddle_days, type} = req.body
+
+            if(number==null){
+                return res.status(400).json({
+                    message:"Please enter location!"
+                })
+            }
             const checkCont = await container.findOne({
                 where:{number: number}
             })
