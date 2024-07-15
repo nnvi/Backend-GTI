@@ -234,6 +234,11 @@ class containerController{
         try{
             const {number, age, location, iddle_days, type} = req.body
             const {uuid} = req.params
+            if(number==null){
+                return res.status(400).json({
+                    message:"Please enter location!"
+                })
+            }
             const editcontainer = await container.update({
                 number: number,
                 age: age,
