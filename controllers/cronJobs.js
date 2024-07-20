@@ -1,3 +1,4 @@
+const { stat } = require('fs');
 const { Sequelize, container } = require('../models');
 
 const updateIddleDays = async () => {
@@ -5,7 +6,9 @@ const updateIddleDays = async () => {
     const startTime = new Date();
     await container.update(
       { iddle_days: Sequelize.literal('iddle_days + 1') },
-      { where: {}, logging: false },
+      { where: {
+        status: "Ready"
+      }, logging: false },
     );
     const endTime = new Date();
     console.log(
