@@ -14,7 +14,11 @@ class RepairController {
             const end = page * pageSize
             const exportData = req.query.export || false;
 
-            const countRepair = await repair.count()
+            const countRepair = await repair.count({
+                where:{
+                    '$container.number$': { [Sequelize.Op.like]: `%${search}%` }
+                }
+            })
             const totalPage = (countRepair % pageSize != 0 ? (Math.floor(countRepair / pageSize)) + 1 : (Math.floor(countRepair / pageSize)))
 
             const getAllRepair = await repair.findAll({
