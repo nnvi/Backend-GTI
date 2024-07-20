@@ -83,7 +83,15 @@ class containerController{
         try{
             const {number, age, location, iddle_days, type} = req.body
 
-            c
+            if(age<0){
+                return res.status(400).json({
+                    message: "Age should be at or above 0!"
+                })
+            }else if(iddle_days<0){
+                return res.status(400).json({
+                    message: "Iddle days should be at or above 0!"
+                })
+            }
 
             if(location==null || location==""){
                 return res.status(400).json({
@@ -246,7 +254,7 @@ class containerController{
                     message: "Iddle days should be at or above 0!"
                 })
             }
-            
+
             if(location==null|| location==""){
                 return res.status(400).json({
                     message:"Please enter location!"
