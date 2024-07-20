@@ -367,11 +367,12 @@ class ShipmentController{
                 return res.status(500).json({
                     message:`ETA date must same or above ETD Date !`
                 })
-            }else if(POL===POD){
+            }else if(POL == POD){
                 return res.status(400).json({
                     message:"POL & POD cannot be same!"
                 })
             }
+
             const getShipment = await shipment.findOne({
                 where:{uuid:uuid},
                 attributes:['id','shipment_detail_id']
