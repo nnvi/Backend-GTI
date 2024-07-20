@@ -85,15 +85,13 @@ class containerController{
 
             if(age<0){
                 return res.status(400).json({
-                    message: "Age should be at or above 0!"
+                    message: "Age should not under 0!"
                 })
             }else if(iddle_days<0){
                 return res.status(400).json({
-                    message: "Iddle days should be at or above 0!"
+                    message: "Iddle days should not under 0!"
                 })
-            }
-
-            if(location==null || location==""){
+            }else if(location==null || location==""){
                 return res.status(400).json({
                     message:"Please enter location!"
                 })
@@ -247,15 +245,13 @@ class containerController{
 
             if(age<0){
                 return res.status(400).json({
-                    message: "Age should be at or above 0!"
+                    message: "Age should not under 0!"
                 })
             }else if(iddle_days<0){
                 return res.status(400).json({
-                    message: "Iddle days should be at or above 0!"
+                    message: "Iddle days should not under 0!"
                 })
-            }
-
-            if(location==null|| location==""){
+            }else if(location==null || location==""){
                 return res.status(400).json({
                     message:"Please enter location!"
                 })
