@@ -154,6 +154,10 @@ class ShipmentController{
                 return res.status(400).json({
                     message:"Missing remark data !"
                 })
+            }else if(POL == POD){
+                return res.status(400).json({
+                    message:"POL & POD cannot be same!"
+                })
             }
 
             const checkShip = await shipment.findOne({
