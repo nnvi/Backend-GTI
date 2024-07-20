@@ -17,7 +17,11 @@ class RepairController {
             const countRepair = await repair.count({
                 where:{
                     '$container.number$': { [Sequelize.Op.like]: `%${search}%` }
-                }
+                },
+                include: [{
+                    model: container,
+                    attributes: ['number', 'type', 'location', 'age']
+                }, container]
             })
             const totalPage = (countRepair % pageSize != 0 ? (Math.floor(countRepair / pageSize)) + 1 : (Math.floor(countRepair / pageSize)))
 
