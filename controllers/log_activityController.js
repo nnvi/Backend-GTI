@@ -10,6 +10,7 @@ class LogActivityController{
             const start = (page-1)*pageSize
             const end = page*pageSize
             const search = req.query.search || ''
+            search = search.toUpperCase()
 
             let whereClause = {};
             const getUser = await users.findOne({

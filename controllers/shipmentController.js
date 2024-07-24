@@ -15,6 +15,7 @@ class ShipmentController{
             const startDate = req.query.startDate ? new Date(req.query.startDate) : null;
             const endDate = req.query.endDate ? new Date(`${req.query.endDate}T23:59:59.999`) : null;
             const exportData = req.query.export || false;
+            search = search.toUpperCase()
 
             const getUser = await users.findOne({
                 where:{id:req.UserData.id},
@@ -128,8 +129,6 @@ class ShipmentController{
         try{
             const {number, container_number, status,POL, POD, ETD, ETA, stuffing_date, shipper,remark_description} = req.body
             
-            const createdetails= await shipment_detail.create({POL, POD, ETD, ETA, stuffing_date, shipper})
-
             const cont_id =  await container.findAll({
                 where:{
                     number: container_number
@@ -178,6 +177,15 @@ class ShipmentController{
                     })
                 }                
             });
+            
+            const createdetails= await shipment_detail.create({
+                POL: POL.toUpperCase(),
+                POD: POD.toUpperCase(),
+                ETD: ETD,
+                ETA: ETA,
+                stuffing_date: stuffing_date,
+                shipper: shipper.toUpperCase()
+            })
 
             const create = await shipment.create({
                 uuid: uuidv4(),
@@ -186,7 +194,7 @@ class ShipmentController{
                 return_empty: null,
                 status:status,
                 shipment_detail_id: createdetails.id,
-                remark_description: remark_description,
+                remark_description: remark_description.toUpperCase(),
                 active_status: true,
                 delete_by: null
             })
@@ -382,7 +390,12 @@ class ShipmentController{
             })
 
             const updateShipmentDetails = await shipment_detail.update({
-                POL,POD,ETD,ETA,stuffing_date,shipper
+                POL: POL.toUpperCase(),
+                POD: POD.toUpperCase(),
+                ETD: ETD,
+                ETA: ETA,
+                stuffing_date: stuffing_date,
+                shipper: shipper.toUpperCase()
             },{
                 where:{
                     id: getShipment.shipment_detail_id
@@ -432,7 +445,7 @@ class ShipmentController{
 
             if(status=="Return"){
                 const updateContainer = await container.update({
-                    location: POD,
+                    location: POD.toUpperCase(),
                     iddle_days: 0,
                     status:"Ready"
                 },{
@@ -445,7 +458,7 @@ class ShipmentController{
                 number: number,
                 return_empty: (status=="Return"? new Date():null),
                 status:status,
-                remark_description: (status== "Pickup"|| status=="Accident" ? remark_description:null)
+                remark_description: (status== "Pickup"|| status=="Accident" ? remark_description.toUpperCase():null)
             },{
                 where:{uuid:uuid},
                 returning: true
@@ -454,7 +467,7 @@ class ShipmentController{
             const idPivot = getContainerUsed.map(detail => detail.id);
             const delPivotData = await shipment_containers.destroy({where:{id:idPivot}})
             const pivotData = cont_id.map(container=>({
-                shipment_id:getShipment.id,
+                shipment_id: getShipment.id,
                 container_id: container.id
             }))
             const addPivotShip = await shipment_containers.bulkCreate(pivotData)

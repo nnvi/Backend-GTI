@@ -135,7 +135,7 @@ class RepairController {
                 uuid: uuidv4(),
                 user_id: req.UserData.id,
                 container_id: cont_id.id,
-                remarks: remarks,
+                remarks: remarks.toUpperCase(),
                 image: (result == null ? result : result.secure_url),
                 finish: false
             })
@@ -149,7 +149,7 @@ class RepairController {
             const addRepairLog = await log_activity.create({
                 user_id: req.UserData.id,
                 shipment_id: null,
-                repair_id: null,
+                repair_id: create.id,
                 activity_info: `Added New Repairment ${number}`
             })
             res.status(201).json({
@@ -346,7 +346,7 @@ class RepairController {
 
             const editRepair = await repair.update({
                 container_id: cont_id.id,
-                remarks: remarks,
+                remarks: remarks.toUpperCase(),
                 image: result ? result.secure_url : getRepair.image
             }, {
                 where: { uuid: uuid },

@@ -140,11 +140,11 @@ class userController {
       }
       const create = await users.create({
         uuid: uuidv4(),
-        name: name,
+        name: name.toUpperCase(),
         email: email,
         password: hashedPassword,
         role: role,
-        location: location,
+        location: location.toUpperCase(),
         image: (result == null ? result : result.secure_url)
       }, function (err, result) {
         if (err) {
@@ -158,7 +158,7 @@ class userController {
         user_id: req.UserData.id,
         shipment_id: null,
         repair_id: null,
-        activity_info: `add new user ${create.name}`
+        activity_info: `Add new user ${create.name}`
       })
       res.status(201).json({
         message: `Successfully add user ${create.name} !`,
@@ -231,7 +231,7 @@ class userController {
         user_id: req.UserData.id,
         shipment_id: null,
         repair_id: null,
-        activity_info: `delete user data ${getUser.name}`,
+        activity_info: `Delete user data ${getUser.name}`,
       });
       res.status(200).json({
         message: `User deleted successfully`,
@@ -288,11 +288,11 @@ class userController {
         result = null;
       }
       const editUser = await users.update({
-        name: name,
+        name: name.toUpperCase(),
         email: email,
         password: hashedPassword ? hashedPassword : getUser.password,
         role: role,
-        location: location,
+        location: location.toUpperCase(),
         image: result ? result.secure_url : getUser.image
       }, {
         where: { uuid: uuid },
@@ -303,7 +303,7 @@ class userController {
         user_id: req.UserData.id,
         shipment_id: null,
         repair_id: null,
-        activity_info: `edit user data ${getUser.name}`
+        activity_info: `Edit user data ${getUser.name}`
       })
       res.status(200).json({
         message: `User updated successfully`,

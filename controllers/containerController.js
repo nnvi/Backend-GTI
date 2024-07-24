@@ -107,10 +107,10 @@ class containerController{
             }
             const create = await container.create({
                 uuid: uuidv4(),
-                number: number,
+                number: number.toUpperCase(),
                 user_id: req.UserData.id,
                 age: age,
-                location: location,
+                location: location.toUpperCase(),
                 iddle_days:iddle_days,
                 type: type,
                 status: "Ready"
@@ -257,10 +257,10 @@ class containerController{
                 })
             }
             const editcontainer = await container.update({
-                number: number,
+                number: number.toUpperCase(),
                 age: age,
                 user_id: req.UserData.id,
-                location: location,
+                location: location.toUpperCase(),
                 iddle_days: iddle_days,
                 type: type
             },{
