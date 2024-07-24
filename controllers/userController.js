@@ -144,7 +144,7 @@ class userController {
         email: email,
         password: hashedPassword,
         role: role,
-        location: location.toUpperCase(),
+        location: location,
         image: (result == null ? result : result.secure_url)
       }, function (err, result) {
         if (err) {
@@ -292,7 +292,7 @@ class userController {
         email: email,
         password: hashedPassword ? hashedPassword : getUser.password,
         role: role,
-        location: location.toUpperCase(),
+        location: location,
         image: result ? result.secure_url : getUser.image
       }, {
         where: { uuid: uuid },
