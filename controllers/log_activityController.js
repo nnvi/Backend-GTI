@@ -9,7 +9,7 @@ class LogActivityController{
             const pageSize = 5
             const start = (page-1)*pageSize
             const end = page*pageSize
-            const search = req.query.search || ''
+            let search = req.query.search || ''
             search = search.toUpperCase()
 
             let whereClause = {};
