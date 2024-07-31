@@ -129,6 +129,8 @@ class ShipmentController{
         try{
             const {number, container_number, status,POL, POD, ETD, ETA, stuffing_date, shipper,remark_description} = req.body
             
+            const today = new Date()
+            const gettoday = `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`
             const cont_id =  await container.findAll({
                 where:{
                     number: container_number
@@ -141,6 +143,10 @@ class ShipmentController{
                     code: 400,
                     message: "One or more container numbers are not found in the database."
                 });
+            }else if (stuffing_date < gettoday){
+                return res.status(500).json({
+                    message:`Stuffing date should be today or above!`
+                })
             }else if (stuffing_date > ETD){
                 return res.status(500).json({
                     message:`Stuffing date must same or below ETD Date !`

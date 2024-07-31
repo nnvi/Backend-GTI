@@ -13,6 +13,7 @@ class containerController{
             const search = req.query.search || ''
             const filterStatus = req.query.status || ''
             const filterlocation = req.query.location || ''
+            const filtertype = req.query.type || ''
             const exportData = req.query.export || false;
 
             const whereClause = {
@@ -21,6 +22,7 @@ class containerController{
                 },
                 ...(search && { number: { [Sequelize.Op.like]: `%${search}%` } }),
                 ...(filterStatus && { status: filterStatus }),
+                ...(filtertype && { type: filtertype }),
                 ...(filterlocation && { location: { [Sequelize.Op.like]: `%${filterlocation}%` } })
             };
 
