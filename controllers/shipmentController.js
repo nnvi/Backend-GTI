@@ -130,13 +130,8 @@ class ShipmentController{
             const {number, container_number, status,POL, POD, ETD, ETA, stuffing_date, shipper,remark_description} = req.body
             
             const today = new Date()
-            const formatter = new Intl.DateTimeFormat('en-GB', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-              });
-              
-            const gettoday = formatter.format(today);
+            const pad = (number) => number.toString().padStart(2, '0');
+            const gettoday = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`
             const cont_id =  await container.findAll({
                 where:{
                     number: container_number
