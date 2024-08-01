@@ -1,7 +1,8 @@
 const { v4: uuidv4 } = require('uuid');
-const {shipment,container,shipment_detail,users, log_activity,shipment_containers, Sequelize}= require('../models');
-const { Op } = require('sequelize');
+const {shipment,container,shipment_detail,users, log_activity,shipment_containers, vendor}= require('../models');
+const { Op, where } = require('sequelize');
 const ExcelJS = require('exceljs');
+const { log } = require('sharp/lib/libvips');
 
 class ShipmentController{
     //get all Shipment
@@ -549,7 +550,73 @@ class ShipmentController{
             })
         }catch(err){
             res.status(500).json({
-                message: err
+                message: err.message
+            })
+        }
+    }
+
+    //Get vendor
+    static async getVendor(req,res){
+        try{
+            let {TMSbook,SPILbook,MRTbook,TNTbook} = ""
+            const today = new Date()
+            const pad = (number) => number.toString().padStart(2, '0');
+            const getnumber = `${today.getFullYear().toString().slice(-2)}${pad(today.getMonth()+1)}`
+
+            const getVendor = await vendor.findAll({
+                attributes:['name','book_code']
+            })
+
+            //Set tanto book number
+            const getTanto =await shipment.findAll({
+                where:{
+                    number:{ [Op.like]: `%TNT${getnumber}%` } 
+                },attributes:['number'],
+                order:[['number','DESC']]
+            })
+            const tanto = getTanto==''?0:getTanto[0].number.split(/(?<=\D)(?=\d)|(?<=\d)(?=\D)/)
+            TNTbook = tanto ==0?`TNT${getnumber}001`:`${tanto[0]}${parseInt(tanto[1])+1}`
+
+            //Set Spil book number
+            const getSPIL =await shipment.findAll({
+                where:{
+                    number:{ [Op.like]: `%SPIL${getnumber}%` } 
+                },attributes:['number'],
+                order:[['number','DESC']]
+            })
+            const spil = getSPIL==''?0:getSPIL[0].number.split(/(?<=\D)(?=\d)|(?<=\d)(?=\D)/)
+            SPILbook = spil==0?`SPIL${getnumber}001`:`${spil[0]}${parseInt(spil[1])+1}`
+
+            //Set Meratus book number
+            const getMRT =await shipment.findAll({
+                where:{
+                    number:{ [Op.like]: `%MRT${getnumber}%` } 
+                },attributes:['number'],
+                order:[['number','DESC']]
+            })
+            const meratus = getMRT==''?0:getMRT[0].number.split(/(?<=\D)(?=\d)|(?<=\d)(?=\D)/)
+            MRTbook = meratus==0?`MRT${getnumber}001`:`${meratus[0]}${parseInt(meratus[1])+1}`
+
+            //Set Temas book number
+            const getTMS =await shipment.findAll({
+                where:{
+                    number:{ [Op.like]: `%TMS${getnumber}%` } 
+                },attributes:['number'],
+                order:[['number','DESC']]
+            })
+            const temas = getTMS==''?0:getTMS[0].number.split(/(?<=\D)(?=\d)|(?<=\d)(?=\D)/)
+            TMSbook = temas==0?`TMS${getnumber}001`:`${temas[0]}${parseInt(meratus[1])+1}`
+            const result = getVendor.map((vendor) => ({
+                ...vendor.get(),
+                book_num: vendor.name =="TANTO"?TNTbook:vendor.name =="SPIL"?SPILbook:vendor.name =="MERATUS"?MRTbook:TMSbook
+            }));
+            
+            res.status(200).json({
+                vendors:result
+            })
+        }catch(err){
+            res.status(500).json({
+                message: err.message
             })
         }
     }
